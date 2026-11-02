@@ -136,6 +136,12 @@ The Healer may select themselves as a target, but can only heal themselves once 
 
 **Alignment:** Townsfolk
 
+#### Guard
+
+The Guard may choose one other living player to protect during the night, or pass without choosing anyone. If a player visiting the guarded target for a killing action would kill them, the target survives and the Guard dies together with the attacker. The attacker privately receives the Guard action image when the day begins.
+
+**Alignment:** Townsfolk
+
 #### Tavern Keeper
 
 The Tavern Keeper performs an action during the night.
@@ -143,6 +149,12 @@ The Tavern Keeper performs an action during the night.
 Each night, the Tavern Keeper can select one player. That player's night ability is blocked for the current night.
 
 The Tavern Keeper cannot block the Werewolf's action during an even-numbered night, also called a Full Moon.
+
+**Alignment:** Townsfolk
+
+#### Jailor
+
+The Jailor acts at priority 1 and may choose one other living player to jail or pass without choosing anyone. A jailed player cannot perform their night action, and other players' actions that target the jailed player have no effect. Those visitors receive no notification that their effects were stopped. The jailed player receives the Jailor action image privately.
 
 **Alignment:** Townsfolk
 
@@ -165,6 +177,16 @@ Therefore, the Master Thief can deceive the Militia.
 
 **Alignment:** Townsfolk
 
+#### Judge
+
+The Judge wakes at night and may select two different living players or pass without selecting anyone. Selecting players counts as visiting both of them for night visit effects, including the Werewolf and Trapper. After a valid pair is selected, the Judge receives a private result showing whether they are teammates or rivals. Passing produces no comparison result.
+
+Players are teammates when both belong to the Townsfolk team or both belong to the Thieves team. Different teams are rivals. Independent Evil players are always rivals, including a pair of Independent Evil players.
+
+The Judge is defined as an available role but is not included in the preset scenarios.
+
+**Alignment:** Townsfolk
+
 #### Hunter
 
 The Hunter can shoot one player during the night.
@@ -175,6 +197,18 @@ There is a special interaction involving the RedHat:
 
 * If a RedHat exists in the current game and the Hunter is still alive, the RedHat cannot be killed during the night by another player's attack.
 * If the Hunter shoots a Townsfolk player during the night, the Hunter commits suicide during the following day and is removed from the game.
+
+**Alignment:** Townsfolk
+
+#### Crossbowman
+
+The Crossbowman may select one living player to shoot during a night, but cannot shoot on the first night. The Crossbowman has two arrows for the entire game; each shot consumes one arrow. Passing or being blocked does not consume an arrow. A player killed by the Crossbowman privately receives the Crossbowman action image. This role is available but is not part of the preset scenarios.
+
+**Alignment:** Townsfolk
+
+#### Trapper
+
+At night, the Trapper may place a trap on themselves or pass. The Trapper has two traps for the entire game; each placed trap consumes one use, while passing or being blocked does not. Every player who visits the Trapper while a trap is set dies and privately receives the Trapper action image when the day begins. The Trapper acts at night priority 7 and is not included in the preset scenarios.
 
 **Alignment:** Townsfolk
 
@@ -209,12 +243,20 @@ The Shadow does not necessarily know that the Thief attacked Player A.
 
 **Alignment:** Townsfolk
 
+#### Watcher
+
+The Watcher acts at the same final night priority as the Shadow. It selects one player and receives the same visitor information: which players visited that target during the night, without their roles, actions, or intentions. The Watcher is defined as an available role but is not included in the preset scenarios.
+
+**Alignment:** Townsfolk
+
 ### 6.2 Thieves Team
 
 The Thieves team consists of:
 
 * Master Thief
 * Thief
+* Thief Shaman
+* Thief Seer
 
 They are members of the same team, know each other's identities, and cooperate during the night. Their objective is to eliminate the opposing players.
 
@@ -247,6 +289,26 @@ The Thief:
 * Appears as Evil when investigated by the Militia.
 
 If the Thief dies or leaves the game, the Master Thief takes over the Thief's visiting and attacking function. From that point onward, the Master Thief selects and personally visits the victim.
+
+#### Thief Shaman
+
+The Thief Shaman belongs to the **Thieves Support** subgroup. At the beginning of the game, the Shaman learns the identities of the Master Thief and Thief, and both learn the Shaman's identity. During the night, the Shaman also sees the kill target selected by the Master Thief or Thief.
+
+While either the Master Thief or Thief is alive, the Shaman may select one living player to silence or pass. A silenced player cannot send messages in the game chat during the following day and privately receives the Thief Shaman silence image. The silence action is blocked by the Tavern Keeper or Jailor as normal.
+
+If both the Master Thief and Thief are dead, the Shaman can no longer silence players. Instead, the Shaman may select one living player as the Thieves' kill target. The target privately receives the Thief Shaman kill image if killed by that attack. The Thief Shaman counts as a member of the Thieves team for victory conditions.
+
+**Alignment:** Thieves
+
+#### Thief Seer
+
+The Thief Seer belongs to the **Thieves Support** subgroup. The Seer learns the identities of the Thieves teammates at the beginning of the game, and they learn the Seer's identity.
+
+Each night, the Seer may select one living player or pass. While at least one of the Master Thief, Thief, or Thief Shaman is alive, the selection reveals that player's exact role to the entire living Thieves team. Each teammate, including the Seer, privately receives the Thief Seer vision image with the selected player's name and role beneath it. The role check still resolves if the selected player is killed during that same night.
+
+If the Master Thief, Thief, and Thief Shaman are all dead, the Seer can no longer check roles and instead selects the Thieves' kill target. A player killed by this attack privately receives the Thief Seer kill image. The Thief Seer counts as a Thieves team member for victory conditions.
+
+**Alignment:** Thieves
 
 ### 6.3 Independent Evil Roles
 
@@ -308,13 +370,15 @@ The game automatically proceeds through the complete night sequence.
 
 Night actions occur in a fixed sequence:
 
-1. Tavern Keeper
-2. Thieves
-3. Werewolf, only during a Full Moon
-4. Militia
-5. Healer
-6. Hunter
-7. Shadow
+1. Jailor
+2. Tavern Keeper
+3. Master Thief, Thief, Thief Shaman, and Thief Seer
+4. Werewolf, only during a Full Moon
+5. Militia and Judge
+6. Healer
+7. Guard
+8. Hunter, Crossbowman, and Trapper
+9. Shadow and Watcher
 
 The order is important because earlier actions may affect roles that act later. For example, if the Tavern Keeper blocks the Militia, the Militia is unable to investigate when its turn begins.
 

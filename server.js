@@ -22,6 +22,8 @@ const room = {
   phaseStartedAt: null,
   phaseDuration: 0,
   nightNumber: 1,
+  jailedPlayerId: null,
+  judgeDeliveredNight: null,
   nominated: null,
   finalVotes: new Map(),
   nominationVotes: new Map(),
@@ -177,14 +179,21 @@ function gameStateFor(player) {
     activeRole: room.phase === 'night' ? room.nightTurns[room.nightTurnIndex]?.role || null : null,
     activePlayerId: room.phase === 'night' ? room.nightTurns[room.nightTurnIndex]?.id || null : null,
     activeTurnBlocked: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].blocked === true : false,
+    activeTurnJailed: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].jailed === true : false,
+    activeTurnFirstNightUnavailable: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].firstNightUnavailable === true : false,
     activeTurnInformational: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].informational === true : false,
     activeTurnInfoTarget: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].infoTarget || null : null,
+    activeTurnShamanKilling: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].shamanKilling === true : false,
+    activeTurnSeerKilling: room.phase === 'night' && room.nightTurns[room.nightTurnIndex]?.id === player.id ? room.nightTurns[room.nightTurnIndex].seerKilling === true : false,
     role: player.role || null,
     roleDefinition: player.role ? publicRoleDefinition(player.role) : null,
     selfHealAvailable: player.role === 'Healer' && player.selfHealUsed !== true,
+    crossbowArrowsRemaining: player.role === 'Crossbowman' ? player.crossbowArrowsRemaining ?? 2 : null,
+    trapperTrapsRemaining: player.role === 'Trapper' ? player.trapperTrapsRemaining ?? 2 : null,
     gender: player.gender || null,
     name: player.name,
     alive: player.alive !== false,
+    silenced: player.silenced === true,
     spectator: player.alive === false,
     deadPlayers: [...room.players.values()].filter(candidate => candidate.alive === false).map(candidate => ({ id: candidate.id, name: candidate.name, role: candidate.role })),
     nightResult: room.lastNightResult
@@ -206,10 +215,14 @@ function proceedToVoting() {
 
 function beginNight() {
   setPhase('night');
+  room.jailedPlayerId = null;
+  room.judgeDeliveredNight = null;
   room.nightTurns = room.scenario.nightRoleOrder
     .map(role => [...room.players.values()].find(player => player.role === role && player.alive !== false))
     .filter(Boolean)
     .filter(player => player.role !== 'Werewolf' || room.nightNumber % 2 === 0)
+    .filter(player => player.role !== 'Crossbowman' || room.nightNumber === 1 || (player.crossbowArrowsRemaining ?? 2) > 0)
+    .filter(player => player.role !== 'Trapper' || (player.trapperTrapsRemaining ?? 2) > 0)
     .map(player => ({ id: player.id, role: player.role }));
   room.nightTurnIndex = -1;
   room.nightTurnStartedAt = null;
@@ -230,17 +243,32 @@ function isTurnBlocked(turn) {
 
 function advanceNightTurn() {
   room.nightTurnIndex += 1;
-  const turn = room.nightTurns[room.nightTurnIndex];
+  let turn = room.nightTurns[room.nightTurnIndex];
   if (!turn) {
     room.nightTurnStartedAt = null;
     setPhase('night-resolution');
     return;
   }
-  turn.blocked = isTurnBlocked(turn);
+  turn.jailed = turn.id === room.jailedPlayerId;
+  turn.firstNightUnavailable = turn.role === 'Crossbowman' && room.nightNumber === 1;
+  turn.blocked = turn.jailed || isTurnBlocked(turn);
   if (turn.role === 'Thief') {
     const masterThief = [...room.players.values()].find(candidate => candidate.role === 'MasterThief' && candidate.alive !== false);
     turn.informational = Boolean(masterThief);
     turn.infoTarget = masterThief && masterThief.action && masterThief.action !== 'none' ? masterThief.action : null;
+  }
+  if (turn.role === 'ThiefShaman') {
+    const masterThief = [...room.players.values()].find(candidate => candidate.role === 'MasterThief' && candidate.alive !== false);
+    const thief = [...room.players.values()].find(candidate => candidate.role === 'Thief' && candidate.alive !== false);
+    const livingThief = masterThief || thief;
+    turn.shamanKilling = !livingThief;
+    turn.informational = false;
+    turn.infoTarget = masterThief?.action && masterThief.action !== 'none'
+      ? masterThief.action
+      : thief?.action && thief.action !== 'none' ? thief.action : null;
+  }
+  if (turn.role === 'ThiefSeer') {
+    turn.seerKilling = ![...room.players.values()].some(candidate => ['MasterThief', 'Thief', 'ThiefShaman'].includes(candidate.role) && candidate.alive !== false);
   }
   room.nightTurnStartedAt = Date.now();
 }
@@ -252,7 +280,9 @@ function broadcastGameState() {
 function resolveNight() {
   const result = resolveNightRules({ players: [...room.players.values()], nightNumber: room.nightNumber });
   for (const message of result.privateMessages) {
+    if (message.type === 'shaman-silence') continue;
     if (message.type === 'investigation-result' && room.investigationDeliveredNight === room.nightNumber) continue;
+    if (message.type === 'judge-result' && room.judgeDeliveredNight === room.nightNumber) continue;
     const recipient = room.players.get(message.recipientId);
     if (recipient) {
       const { recipientId, ...payload } = message;
@@ -261,9 +291,12 @@ function resolveNight() {
   }
   room.lastNightResult = { deaths: result.deaths, healed: result.healed, nightNumber: result.nightNumber };
   room.pendingKillNotices = result.deaths
-    .filter(death => ['Thief', 'MasterThief', 'Werewolf', 'Hunter'].includes(death.killerRole))
+    .filter(death => ['Thief', 'MasterThief', 'ThiefShaman', 'ThiefSeer', 'Werewolf', 'Hunter', 'Crossbowman', 'Guard', 'Trapper'].includes(death.killerRole))
     .map(death => ({ name: death.name, killerRole: death.killerRole }));
   room.pendingHealNotice = Boolean(result.healed);
+  room.pendingSilenceNotices = result.privateMessages
+    .filter(message => message.type === 'shaman-silence')
+    .map(message => message.recipientId);
   setPhase('night-results');
 }
 
@@ -275,6 +308,11 @@ function deliverKillNotices() {
   room.pendingKillNotices = [];
   if (room.pendingHealNotice) broadcast({ type: 'heal-notice' });
   room.pendingHealNotice = false;
+  for (const recipientId of room.pendingSilenceNotices || []) {
+    const recipient = room.players.get(recipientId);
+    if (recipient) send(recipient.socket, { type: 'shaman-silence-notice' });
+  }
+  room.pendingSilenceNotices = [];
 }
 
 function validNightTarget(player, target) {
@@ -283,9 +321,20 @@ function validNightTarget(player, target) {
   if (!definition || definition.targeting.type !== 'living-player') return false;
   const targetPlayer = [...room.players.values()].find(candidate => candidate.name === target && candidate.alive !== false);
   if (!targetPlayer) return false;
+  if (player.role === 'Crossbowman' && (room.nightNumber <= 1 || (player.crossbowArrowsRemaining ?? 2) <= 0)) return false;
+  if (player.role === 'Trapper' && (player.trapperTrapsRemaining ?? 2) <= 0 && target !== 'none') return false;
+  if (player.role === 'Trapper' && target !== 'none' && target !== player.name) return false;
   if (player.role === 'Healer' && targetPlayer.id === player.id && player.selfHealUsed === true) return false;
   if (['MasterThief', 'Thief'].includes(player.role) && ['MasterThief', 'Thief'].includes(targetPlayer.role)) return false;
   return definition.targeting.allowSelf || targetPlayer.id !== player.id;
+}
+
+function validJudgeTargets(player, targets) {
+  if (player.role !== 'Judge' || !Array.isArray(targets) || targets.length !== 2 || targets[0] === targets[1]) return false;
+  return targets.every(name => {
+    const target = [...room.players.values()].find(candidate => candidate.name === name && candidate.alive !== false);
+    return Boolean(target && target.id !== player.id);
+  });
 }
 
 function checkVictory(event) {
@@ -646,16 +695,20 @@ webSocketServer.on('connection', socket => {
         connectedPlayer.alive = true;
         connectedPlayer.action = null;
         connectedPlayer.selfHealUsed = false;
+        connectedPlayer.crossbowArrowsRemaining = 2;
+        connectedPlayer.trapperTrapsRemaining = 2;
+        connectedPlayer.judgeTargets = null;
+        connectedPlayer.silenced = false;
       });
-      const thieves = eligiblePlayers.filter(connectedPlayer => ['MasterThief', 'Thief'].includes(connectedPlayer.role));
-      if (thieves.length === 2) {
-        for (const thief of thieves) {
-          const teammate = thieves.find(candidate => candidate.id !== thief.id);
+      const thieves = eligiblePlayers.filter(connectedPlayer => ['MasterThief', 'Thief', 'ThiefShaman', 'ThiefSeer'].includes(connectedPlayer.role));
+      for (const thief of thieves) {
+        for (const teammate of thieves.filter(candidate => candidate.id !== thief.id)) {
           send(thief.socket, { type: 'team-info', team: 'Thieves', teammate: { id: teammate.id, name: teammate.name, role: teammate.role } });
         }
       }
       setPhase('preparation');
       room.nightNumber = 1;
+      room.jailedPlayerId = null;
       room.nominated = null;
       room.finalVotes.clear();
       room.nominationVotes.clear();
@@ -676,23 +729,45 @@ webSocketServer.on('connection', socket => {
         send(socket, { type: 'error', code: 'NOT_ACTIVE_ROLE', message: 'It is not your role turn.' });
         return;
       }
+      const judgeTargets = message.targets;
+      const isJudgeAction = player.role === 'Judge';
       const target = typeof message.target === 'string' ? message.target : 'none';
-      if (!validNightTarget(player, target)) {
+      if (isJudgeAction ? target !== 'none' && !validJudgeTargets(player, judgeTargets) : !validNightTarget(player, target)) {
         send(socket, { type: 'error', code: 'INVALID_NIGHT_TARGET', message: 'That target is not available for this role.' });
         return;
       }
-      player.action = target;
-      send(socket, { type: 'action-accepted', action: 'night-action', target: player.action });
+      if (isJudgeAction) {
+        player.action = target;
+        player.judgeTargets = target === 'none' ? null : [...judgeTargets];
+        if (target !== 'none') {
+          const [firstName, secondName] = judgeTargets;
+          const first = [...room.players.values()].find(candidate => candidate.name === firstName);
+          const second = [...room.players.values()].find(candidate => candidate.name === secondName);
+          const firstTeam = roleDefinition(first.role)?.team;
+          const secondTeam = roleDefinition(second.role)?.team;
+          const teammates = firstTeam === secondTeam && firstTeam !== 'Independent Evil';
+          room.judgeDeliveredNight = room.nightNumber;
+          send(socket, { type: 'judge-result', teammates, players: [first.name, second.name] });
+        }
+      } else {
+        player.action = target;
+      }
+      send(socket, { type: 'action-accepted', action: 'night-action', target: isJudgeAction ? 'judge' : player.action });
       if (player.role === 'Militia' && target !== 'none') {
         const investigated = [...room.players.values()].find(candidate => candidate.name === target && candidate.alive !== false);
-        if (investigated) {
+        if (investigated && investigated.id !== room.jailedPlayerId) {
           room.investigationDeliveredNight = room.nightNumber;
           send(socket, { type: 'investigation-result', target: investigated.name, alignment: alignmentFor(investigated.role) });
         }
       }
       if (player.role === 'TavernKeeper' && target !== 'none') {
         const blocked = [...room.players.values()].find(candidate => candidate.name === target && candidate.alive !== false);
-        if (blocked && roleDefinition(blocked.role)?.canBeBlocked) send(blocked.socket, { type: 'blocked-notice' });
+        if (blocked && blocked.id !== room.jailedPlayerId && roleDefinition(blocked.role)?.canBeBlocked) send(blocked.socket, { type: 'blocked-notice' });
+      }
+      if (player.role === 'Jailor') {
+        const jailedPlayer = target === 'none' ? null : [...room.players.values()].find(candidate => candidate.name === target && candidate.alive !== false);
+        room.jailedPlayerId = jailedPlayer?.id || null;
+        if (jailedPlayer) send(jailedPlayer.socket, { type: 'jail-notice' });
       }
       advanceNightTurn();
       broadcastGameState();
@@ -751,7 +826,9 @@ webSocketServer.on('connection', socket => {
       return;
     }
 
-    if (message.type === 'chat' && typeof message.text === 'string' && canChat({ player, phase: room.phase })) {
+    if (message.type === 'chat' && typeof message.text === 'string' && player.silenced === true && room.phase !== 'lobby') {
+      send(socket, { type: 'error', code: 'PLAYER_SILENCED', message: 'You cannot use the game chat during this day.' });
+    } else if (message.type === 'chat' && typeof message.text === 'string' && canChat({ player, phase: room.phase })) {
       const text = message.text.trim().slice(0, 240);
       if (text) broadcast({ type: 'chat', author: player.name, text });
     } else if (message.type === 'chat' && player.alive === false) {

@@ -7,11 +7,15 @@ function canStartGame({ player, hostId, phase, identifiedCount, minimumPlayers }
 }
 
 function canUseNightAction({ player, activeTurn, phase }) {
-  return phase === 'night' && isAlive(player) && activeTurn?.id === player.id && activeTurn.blocked !== true && activeTurn.informational !== true;
+  return phase === 'night' && isAlive(player) && activeTurn?.id === player.id
+    && activeTurn.blocked !== true && activeTurn.jailed !== true
+    && activeTurn.firstNightUnavailable !== true && activeTurn.informational !== true;
 }
 
 function canSkipNightAction({ player, activeTurn, phase }) {
-  return phase === 'night' && isAlive(player) && activeTurn?.id === player.id && (activeTurn.blocked === true || activeTurn.informational === true);
+  return phase === 'night' && isAlive(player) && activeTurn?.id === player.id
+    && (activeTurn.blocked === true || activeTurn.jailed === true
+      || activeTurn.firstNightUnavailable === true || activeTurn.informational === true);
 }
 
 function canSubmitVote({ player, phase, nominee }) {
@@ -28,7 +32,7 @@ function canAdvancePhase({ player, phase }) {
 
 function canChat({ player, phase }) {
   if (phase === 'lobby') return Boolean(player);
-  return isAlive(player) && !['night', 'night-resolution', 'night-results', 'preparation'].includes(phase);
+  return isAlive(player) && player.silenced !== true && !['night', 'night-resolution', 'night-results', 'preparation'].includes(phase);
 }
 
 module.exports = { isAlive, canStartGame, canUseNightAction, canSkipNightAction, canSubmitVote, canSubmitDefense, canAdvancePhase, canChat };

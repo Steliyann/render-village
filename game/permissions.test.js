@@ -20,6 +20,10 @@ test('only the active living role can act at Night', () => {
 
 test('only the active blocked role can skip its Night turn', () => {
   assert.equal(canSkipNightAction({ player: alive, activeTurn: { id: 'p1', blocked: true }, phase: 'night' }), true);
+  assert.equal(canUseNightAction({ player: alive, activeTurn: { id: 'p1', jailed: true }, phase: 'night' }), false);
+  assert.equal(canSkipNightAction({ player: alive, activeTurn: { id: 'p1', jailed: true }, phase: 'night' }), true);
+  assert.equal(canUseNightAction({ player: alive, activeTurn: { id: 'p1', firstNightUnavailable: true }, phase: 'night' }), false);
+  assert.equal(canSkipNightAction({ player: alive, activeTurn: { id: 'p1', firstNightUnavailable: true }, phase: 'night' }), true);
   assert.equal(canSkipNightAction({ player: alive, activeTurn: { id: 'p1' }, phase: 'night' }), false);
   assert.equal(canSkipNightAction({ player: dead, activeTurn: { id: 'p1', blocked: true }, phase: 'night' }), false);
 });
@@ -53,4 +57,6 @@ test('chat is available only to living players outside preparation and Night', (
   assert.equal(canChat({ player: alive, phase: 'night-resolution' }), false);
   assert.equal(canChat({ player: alive, phase: 'night-results' }), false);
   assert.equal(canChat({ player: dead, phase: 'day' }), false);
+  assert.equal(canChat({ player: { ...alive, silenced: true }, phase: 'day' }), false);
+  assert.equal(canChat({ player: { ...alive, silenced: true }, phase: 'vote' }), false);
 });

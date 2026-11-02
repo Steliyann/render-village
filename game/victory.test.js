@@ -16,6 +16,8 @@ test('Townsfolk victory is blocked by a living threat', () => {
 test('Thieves win when they reach parity with every other living player', () => {
   assert.equal(evaluateVictory(living('MasterThief', 'Thief')), 'Thieves');
   assert.equal(evaluateVictory(living('MasterThief', 'Thief', 'Villager', 'Healer')), 'Thieves');
+  assert.equal(evaluateVictory(living('ThiefShaman', 'Villager')), 'Thieves');
+  assert.equal(evaluateVictory(living('ThiefSeer', 'Villager')), 'Thieves');
 });
 
 test('Werewolf wins when no Townsfolk or Thieves remain', () => {
