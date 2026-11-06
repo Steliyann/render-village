@@ -14,13 +14,14 @@ const roles = {
   Trapper: { team: 'Townsfolk', image: 'GameImages/Roles/Good/Male/13.Male_Trapper.png', action: 'Place one of two traps on yourself; visitors die' },
   RedHat: { team: 'Townsfolk', image: 'GameImages/Roles/Good/Female/6.Female_RedHat.png', action: 'Protected from night attacks while Hunter lives' },
   Shadow: { team: 'Townsfolk', image: 'GameImages/Roles/Good/Female/7.Female_Shadow.png', action: 'See who visited a target' },
-  Watcher: { team: 'Townsfolk', image: 'GameImages/Roles/Good/Female/8.Female_Watcher.png', action: 'See who visited a target' },
+  Watcher: { team: 'Townsfolk', image: 'GameImages/Roles/Good/Female/8.Female_Watcher.png', action: 'Learn where a selected player went' },
   MasterThief: { team: 'Thieves', image: 'GameImages/Roles/Evil/Female/1.Female_MasterThief.png', action: 'Choose the target for the Thieves' },
   Thief: { team: 'Thieves', image: 'GameImages/Roles/Evil/Male/2.Male_Thief.png', action: 'Visit and attack the selected target' },
   ThiefShaman: { team: 'Thieves', image: 'GameImages/Roles/Evil/Male/3.Male_Shaman.png', action: 'Silence a player, or attack if both other Thieves are dead' },
   ThiefSeer: { team: 'Thieves', image: 'GameImages/Roles/Evil/Male/4.Male_Seer.png', action: 'Learn a player’s role or attack if the other Thieves are dead' },
   Werewolf: { team: 'Werewolf', image: 'GameImages/Roles/Independent Evil/Male/1.Male_Werewolf.png', action: 'Attack during the full moon' },
-  Jester: { team: 'Neutral', image: 'GameImages/Roles/Independent Evil/Female/2.Female_Jester.png', action: 'Win by being executed during the day' }
+  Jester: { team: 'Neutral', image: 'GameImages/Roles/Independent Evil/Female/2.Female_Jester.png', action: 'Win by being executed during the day' },
+  Gamester: { team: 'Independent Evil', image: 'GameImages/Roles/Independent Evil/Male/3.Male_LordSmith.png', action: 'Challenge a player to an anonymous game of rock-paper-scissors' }
 };
 
 const genderedImages = {
@@ -42,8 +43,50 @@ const genderedImages = {
   ThiefShaman: { male: 'GameImages/Roles/Evil/Male/3.Male_Shaman.png', female: 'GameImages/Roles/Evil/Female/3.Female_Shaman.png' },
   ThiefSeer: { male: 'GameImages/Roles/Evil/Male/4.Male_Seer.png', female: 'GameImages/Roles/Evil/Female/4.Female_Seer.png' },
   Werewolf: { male: 'GameImages/Roles/Independent Evil/Male/1.Male_Werewolf.png', female: 'GameImages/Roles/Independent Evil/Female/1.Female_Werewolf.png' },
-  Jester: { male: 'GameImages/Roles/Independent Evil/Male/2.Male_Jester.png', female: 'GameImages/Roles/Independent Evil/Female/2.Female_Jester.png' }
+  Jester: { male: 'GameImages/Roles/Independent Evil/Male/2.Male_Jester.png', female: 'GameImages/Roles/Independent Evil/Female/2.Female_Jester.png' },
+  Gamester: { male: 'GameImages/Roles/Independent Evil/Male/3.Male_LordSmith.png', female: 'GameImages/Roles/Independent Evil/Female/3.Female_LadyMargaret.png' }
 };
+
+const tutorialSections = [
+  {
+    title: 'Townsfolk',
+    description: 'Work together to identify and remove the threats to the village.',
+    roles: [
+      { id: 'Villager', description: 'No special ability. Use discussion and voting to help find the hidden threats.' },
+      { id: 'Healer', description: 'Choose a player to protect from a night attack. You may heal yourself once per game.' },
+      { id: 'Guard', description: 'Guard another player or pass. If a kill targets the guarded player, they survive while the Guard and credited killer die.' },
+      { id: 'TavernKeeper', description: 'Block another player’s night ability. The Werewolf cannot be blocked on a Full Moon.' },
+      { id: 'Jailor', description: 'Jail one player or pass. The jailed player cannot act, and night actions aimed at them have no effect.' },
+      { id: 'Militia', description: 'Investigate a player to learn their alignment. The Master Thief appears Townsfolk / Good; the Thief appears Thieves / Evil.' },
+      { id: 'Judge', description: 'Select two players to learn whether they are teammates or rivals, or pass. Your selections count as visits for night effects.' },
+      { id: 'Hunter', description: 'Shoot one player starting on the second night. Shooting a Townsfolk player also kills the Hunter that night.' },
+      { id: 'Crossbowman', description: 'Shoot after the first night. You have two arrows for the game; passing or being blocked does not spend one.' },
+      { id: 'Trapper', description: 'Set a trap on yourself or pass. You have two traps; visitors to a set trap die. Passing or being blocked does not spend a trap.' },
+      { id: 'RedHat', description: 'Cannot be killed by a night attack while the Hunter is alive.' },
+      { id: 'Shadow', description: 'Choose a player and learn which players visited them that night. You learn names, not roles or intentions.' },
+      { id: 'Watcher', description: 'Choose a player and learn where that player went that night. You learn destination names, not roles or intentions.' }
+    ]
+  },
+  {
+    title: 'Thieves',
+    description: 'The Thieves are a hidden team who know one another and work toward a shared victory.',
+    roles: [
+      { id: 'MasterThief', description: 'Choose the team’s attack target. The Thief carries out the attack while both are alive; the Master Thief takes over if the Thief is gone.' },
+      { id: 'Thief', description: 'Carries out the attack selected by the Master Thief. If the Master Thief is gone, the Thief chooses and performs the attack.' },
+      { id: 'ThiefShaman', description: 'While another Thief lives, silence a player for the day and learn the team’s target. If both Master Thief and Thief are dead, choose the team’s kill target instead.' },
+      { id: 'ThiefSeer', description: 'While another Thief lives, learn a player’s exact role and share it with the team. If the other three Thieves are dead, choose the team’s kill target instead.' }
+    ]
+  },
+  {
+    title: 'Independent Evil',
+    description: 'These roles pursue individual victory conditions rather than joining the Thieves.',
+    roles: [
+      { id: 'Werewolf', description: 'Acts on even-numbered Full Moon nights, cannot be killed at night, and kills players who visit it during a Full Moon.' },
+      { id: 'Jester', description: 'Win by being executed through the daytime vote.' },
+      { id: 'Gamester', description: 'At night, challenge a living player to anonymous rock-paper-scissors or pass. If not jailed, the target chooses without learning who challenged them. A winning move kills the target at daybreak; two such kills earn an independent victory.' }
+    ]
+  }
+];
 
 const investigationImages = {
   'Townsfolk / Good': 'GameImages/Investigation_Symbols/1.Investigation_Townsfolk.jpg',
@@ -57,6 +100,7 @@ const killerImages = {
   ThiefShaman: 'GameImages/Actions/Evil/5.Action_ThiefShaman_Kill.png',
   ThiefSeer: 'GameImages/Actions/Evil/7.Action_ThiefSeer_Kill.png',
   Werewolf: 'GameImages/Actions/Evil/3.Action_Werewolf.png',
+  Gamester: 'GameImages/Actions/Evil/4.Action_RoyalGame.png',
   Hunter: 'GameImages/Actions/Good/2.Action_Hunter.png',
   Crossbowman: 'GameImages/Actions/Good/8.Action_Crossbowman.png',
   Guard: 'GameImages/Actions/Good/11.Action_Guard.png',
@@ -67,6 +111,7 @@ const blockedImage = 'GameImages/Actions/Good/1.Action_TavernKeeper.png';
 const healedImage = 'GameImages/Actions/Good/3.Action_Healer.png';
 const jailedImage = 'GameImages/Actions/Good/12.Action_Jailor.png';
 const shamanSilenceImage = 'GameImages/Actions/Evil/6.Action_ThiefShaman_Silence.png';
+const gamesterGameImage = 'GameImages/Actions/Common/3.ActionSmithMargaretGame.png';
 const thiefSeerVisionImage = 'GameImages/Actions/Evil/8.Action_ThiefSeer_Vision.png';
 const judgeImages = { teammates: 'GameImages/Actions/Good/9.Action_Judge_Teammates.png', rivals: 'GameImages/Actions/Good/10.Action_Judge_Rivals.png' };
 const visitorImages = {
@@ -79,12 +124,34 @@ const victoryImages = {
   Townsfolk: 'GameImages/Winners/1.Victory_Townsfolk.png',
   Thieves: 'GameImages/Winners/2.Victory_Thieves.png',
   Werewolf: 'GameImages/Winners/3.Victory_Werewolf.png',
-  Jester: 'GameImages/Winners/4.Victory_Jester.png'
+  Jester: 'GameImages/Winners/4.Victory_Jester.png',
+  Gamester: 'GameImages/Winners/5.Victory_Gamesters.png'
 };
 
-const state = { screen: 'identity', phase: 'lobby', nightNumber: 1, timerRemaining: 0, activeRole: null, activePlayerId: null, activeTurnBlocked: false, activeTurnJailed: false, activeTurnFirstNightUnavailable: false, activeTurnInformational: false, activeTurnInfoTarget: null, activeTurnShamanKilling: false, activeTurnSeerKilling: false, selfHealAvailable: false, crossbowArrowsRemaining: 2, trapperTrapsRemaining: 2, silenced: false, shamanSilencePreview: false, thiefSeerPreview: null, judgeTargets: [], judgePass: false, judgePreview: null, jailPreview: false, finalVoteCount: 0, finalVoted: false, nominationVoteCount: 0, nominationVoted: false, dayProceedCount: 0, dayProceeding: false, defenseMessages: [], scenarioId: null, scenarioPlayerCount: null, roleDefinition: null, players: [], selected: null, lastResultNight: null, connectionMessage: '', confirmDeleteLobby: null, confirmLeaveLobby: false, popupMessage: null, avatarPreview: null, rolePreview: null, teammatePreview: null, investigationPreview: null, visitorPreview: null, killPreview: null, blockedPreview: false, healedPreview: false, victoryDismissed: false, revealedRoles: {}, log: [{ author: 'System', text: 'The village is waiting for its players.' }] };
+const state = { screen: 'identity', phase: 'lobby', nightNumber: 1, timerRemaining: 0, activeRole: null, activePlayerId: null, activeTurnBlocked: false, activeTurnJailed: false, activeTurnFirstNightUnavailable: false, activeTurnInformational: false, activeTurnInfoTarget: null, activeTurnShamanKilling: false, activeTurnSeerKilling: false, gamesterTarget: null, gamesterPrompt: false, gamesterChoicesOpen: false, gamesterWaitingForResponse: false, selfHealAvailable: false, crossbowArrowsRemaining: 2, trapperTrapsRemaining: 2, silenced: false, shamanSilencePreview: false, thiefSeerPreview: null, judgeTargets: [], judgePass: false, judgePreview: null, jailPreview: false, finalVoteCount: 0, finalVoted: false, nominationVoteCount: 0, nominationVoted: false, dayProceedCount: 0, dayProceeding: false, defenseMessages: [], scenarioId: null, scenarioPlayerCount: null, roleDefinition: null, players: [], selected: null, lastResultNight: null, connectionMessage: '', confirmDeleteLobby: null, confirmLeaveLobby: false, popupMessage: null, avatarPreview: null, rolePreview: null, teammatePreview: null, investigationPreview: null, visitorPreview: null, killPreview: null, blockedPreview: false, healedPreview: false, victoryDismissed: false, revealedRoles: {}, log: [{ author: 'System', text: 'The village is waiting for its players.' }] };
 let forceChatScrollBottom = false;
+let connectionMessageTimeout = null;
 state.gallowsPreview = null;
+state.tutorialOpen = false;
+state.tutorialImagePreview = null;
+
+function showConnectionMessage(message) {
+  state.connectionMessage = message;
+  if (connectionMessageTimeout !== null) clearTimeout(connectionMessageTimeout);
+  const displayedMessage = message;
+  connectionMessageTimeout = setTimeout(() => {
+    if (state.connectionMessage !== displayedMessage) return;
+    state.connectionMessage = '';
+    connectionMessageTimeout = null;
+    render();
+  }, 60_000);
+}
+
+function clearConnectionMessage() {
+  if (connectionMessageTimeout !== null) clearTimeout(connectionMessageTimeout);
+  connectionMessageTimeout = null;
+  state.connectionMessage = '';
+}
 
 function roleLabel(role) { return role === 'MasterThief' ? 'Master Thief' : role === 'TavernKeeper' ? 'Tavern Keeper' : role === 'ThiefShaman' ? 'Thief Shaman' : role === 'ThiefSeer' ? 'Thief Seer' : role; }
 function roleColorClass(role) { const team = roles[role]?.team; return team === 'Townsfolk' ? 'role-color-good' : team === 'Thieves' ? 'role-color-thief' : 'role-color-independent'; }
@@ -97,6 +164,9 @@ function investigationImageFor(alignment) { return investigationImages[alignment
 function currentRoleDefinition() { return state.roleDefinition || { team: roles[currentPlayer().role]?.team || 'Townsfolk', description: roles[currentPlayer().role]?.action || 'No active ability' }; }
 function acceptRoleDefinition(definition) { if (!definition) return; state.roleDefinition = definition; roles[definition.id] = { ...roles[definition.id], team: definition.team, action: definition.description }; }
 function avatarFor(gender) { return gender === 'female' ? 'GameImages/Profile_Avatar/Female/Female_Avatar.png' : 'GameImages/Profile_Avatar/Male/Male_Avatar.png'; }
+function renderImageOnlyDialog(action, src, alt, label) {
+  return `<div class="modal-overlay image-only-overlay" data-action="${action}"><div class="image-only-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="${label}"><img src="${src}" alt="${alt}"></div></div>`;
+}
 function phaseLabel() { return state.phase === 'preparation' ? 'Preparation' : state.phase === 'night' ? 'Night phase' : state.phase === 'night-resolution' ? 'Night resolution' : state.phase === 'night-results' ? 'Night results' : state.phase === 'day' ? 'Day discussion' : state.phase === 'vote' ? 'Daytime vote' : state.phase === 'defense' ? 'Defense' : state.phase === 'final' ? 'Final vote' : state.phase === 'game-over' ? 'Game over' : 'Lobby'; }
 function timerLabel() { const minutes = Math.floor(state.timerRemaining / 60); const seconds = String(state.timerRemaining % 60).padStart(2, '0'); return state.timerRemaining ? `${minutes}:${seconds}` : '—'; }
 function addLog(author, text, variant) { state.log.push({ author, text, variant: variant || null }); if (state.log.length > 60) state.log.splice(0, state.log.length - 60); }
@@ -109,7 +179,7 @@ function connectToRoom() {
   network.socket = socket;
   socket.addEventListener('open', () => {
     network.connected = true;
-    state.connectionMessage = '';
+    clearConnectionMessage();
     render();
   });
   socket.addEventListener('message', event => {
@@ -146,6 +216,9 @@ function connectToRoom() {
         state.activeTurnInfoTarget = message.game.activeTurnInfoTarget;
         state.activeTurnShamanKilling = message.game.activeTurnShamanKilling === true;
         state.activeTurnSeerKilling = message.game.activeTurnSeerKilling === true;
+        state.gamesterPrompt = message.game.gamesterChallengePending === true;
+        state.gamesterWaitingForResponse = message.game.gamesterWaitingForResponse === true;
+        state.gamesterChoicesOpen = state.gamesterPrompt;
         state.silenced = message.game.silenced === true;
         state.selfHealAvailable = message.game.selfHealAvailable;
         state.crossbowArrowsRemaining = message.game.crossbowArrowsRemaining ?? 2;
@@ -240,6 +313,11 @@ function connectToRoom() {
       state.activeTurnInfoTarget = message.game.activeTurnInfoTarget;
       state.activeTurnShamanKilling = message.game.activeTurnShamanKilling === true;
       state.activeTurnSeerKilling = message.game.activeTurnSeerKilling === true;
+      const hadGamesterPrompt = state.gamesterPrompt;
+      state.gamesterPrompt = message.game.gamesterChallengePending === true;
+      state.gamesterWaitingForResponse = message.game.gamesterWaitingForResponse === true;
+      if (!state.gamesterPrompt) state.gamesterChoicesOpen = false;
+      else if (!hadGamesterPrompt) state.gamesterChoicesOpen = true;
       state.silenced = message.game.silenced === true;
       state.selfHealAvailable = message.game.selfHealAvailable;
       state.crossbowArrowsRemaining = message.game.crossbowArrowsRemaining ?? 2;
@@ -270,6 +348,15 @@ function connectToRoom() {
     }
     if (message.type === 'action-accepted') {
       addLog('System', message.target === 'none' ? 'Your night action was passed.' : 'Your night action was submitted.');
+      if (state.screen === 'game') render();
+    }
+    if (message.type === 'gamester-challenge') {
+      state.gamesterPrompt = true;
+      state.gamesterChoicesOpen = true;
+      if (state.screen === 'game') render();
+    }
+    if (message.type === 'gamester-day-result') {
+      addLog('System', `${message.name} died during the day after a secret game.`);
       if (state.screen === 'game') render();
     }
     if (message.type === 'investigation-result') {
@@ -310,10 +397,16 @@ function connectToRoom() {
       if (src) state.killPreview = { src, killerRole: message.killerRole };
       if (state.screen === 'game') render();
     }
-    if (message.type === 'shadow-result' || message.type === 'watcher-result') {
-      const role = message.type === 'watcher-result' ? 'Watcher' : 'Shadow';
+    if (message.type === 'shadow-result') {
+      const role = 'Shadow';
       addLog('Private result', message.visitors.length ? `${message.visitors.join(', ')} visited ${message.target}.` : `Nobody visited ${message.target}.`);
       state.visitorPreview = { role, src: message.visitors.length ? visitorImages[role].found : visitorImages[role].empty, visitors: message.visitors, target: message.target };
+      if (state.screen === 'game') render();
+    }
+    if (message.type === 'watcher-result') {
+      const role = 'Watcher';
+      addLog('Private result', message.destinations.length ? `${message.target} went to ${message.destinations.join(', ')}.` : `${message.target} did not visit anyone.`);
+      state.visitorPreview = { role, src: message.destinations.length ? visitorImages[role].found : visitorImages[role].empty, destinations: message.destinations, target: message.target };
       if (state.screen === 'game') render();
     }
     if (message.type === 'healing-result') {
@@ -321,10 +414,12 @@ function connectToRoom() {
       if (state.screen === 'game') render();
     }
     if (message.type === 'team-info') {
-      state.revealedRoles[message.teammate.id] = message.teammate.role;
-      const known = state.players.find(candidate => candidate.id === message.teammate.id);
-      if (known) known.role = message.teammate.role;
-      state.teammatePreview = { name: message.teammate.name, role: message.teammate.role, src: imageFor({ role: message.teammate.role, gender: known?.gender || 'male' }) };
+      for (const member of message.members) {
+        state.revealedRoles[member.id] = member.role;
+        const known = state.players.find(candidate => candidate.id === member.id);
+        if (known) known.role = member.role;
+      }
+      state.teammatePreview = { members: message.members };
       if (state.screen === 'game') render();
     }
     if (message.type === 'vote-result') {
@@ -344,7 +439,7 @@ function connectToRoom() {
       if (state.screen === 'game') render();
     }
     if (message.type === 'error') {
-      state.connectionMessage = message.message || 'The server rejected that request.';
+      showConnectionMessage(message.message || 'The server rejected that request.');
       addLog('System', message.message);
       render();
     }
@@ -360,10 +455,10 @@ function connectToRoom() {
     network.connected = false;
     if (network.loggingOut) {
       network.loggingOut = false;
-      state.connectionMessage = '';
+      clearConnectionMessage();
       connectToRoom();
     } else {
-      state.connectionMessage = 'Connection lost. Reconnect to continue the session.';
+      showConnectionMessage('Connection lost. Reconnect to continue the session.');
     }
     render();
   });
@@ -395,7 +490,19 @@ function sendNetwork(message) {
 
 function renderProfileBar() {
   if (!network.identityReady) return '';
-  return `<div class="profile-bar"><span class="profile-name">${network.name || ''}</span><button class="avatar-trigger profile-avatar-trigger" data-action="show-avatar" data-player-id="self" aria-label="View ${network.name || 'your'} avatar"><img class="profile-avatar" src="${avatarFor(network.gender)}" alt=""></button><button class="secondary" data-action="logout">Log out</button></div>`;
+  return `<div class="profile-bar"><span class="profile-name">${network.name || ''}</span><button class="secondary tutorial-trigger" data-action="open-tutorial">Tutorial</button><button class="avatar-trigger profile-avatar-trigger" data-action="show-avatar" data-player-id="self" aria-label="View ${network.name || 'your'} avatar"><img class="profile-avatar" src="${avatarFor(network.gender)}" alt=""></button><button class="secondary" data-action="logout">Log out</button></div>`;
+}
+
+function renderTutorial() {
+  const sections = tutorialSections.map(section => `
+    <section class="tutorial-section" aria-labelledby="tutorial-${section.title.toLowerCase().replaceAll(' ', '-')}">
+      <div class="tutorial-section-heading"><h3 id="tutorial-${section.title.toLowerCase().replaceAll(' ', '-')}">${section.title}</h3><p>${section.description}</p></div>
+      <div class="tutorial-role-grid">${section.roles.map(role => {
+        const art = genderedImages[role.id];
+        return `<article class="tutorial-role-card"><div class="tutorial-role-art"><button class="tutorial-image-button" data-tutorial-image="${art.male}" data-tutorial-image-label="${roleLabel(role.id)} male" aria-label="Enlarge ${roleLabel(role.id)} male image"><img src="${art.male}" alt="${roleLabel(role.id)} male"></button><button class="tutorial-image-button" data-tutorial-image="${art.female}" data-tutorial-image-label="${roleLabel(role.id)} female" aria-label="Enlarge ${roleLabel(role.id)} female image"><img src="${art.female}" alt="${roleLabel(role.id)} female"></button></div><div class="tutorial-role-copy"><h4>${roleLabel(role.id)}</h4><p>${role.description}</p></div></article>`;
+      }).join('')}</div>
+    </section>`).join('');
+  return `<div class="modal-overlay tutorial-overlay" data-action="close-tutorial"><section class="tutorial-dialog" data-tutorial-content role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><header class="tutorial-header"><div><div class="eyebrow">Village After Dark</div><h2 id="tutorial-title">Game tutorial</h2><p>Learn the phases, teams, and role abilities.</p></div><button class="avatar-modal-close tutorial-close" data-action="close-tutorial" aria-label="Close tutorial">&times;</button></header><div class="tutorial-intro"><h3>How to play</h3><p>Roles act secretly at night in priority order. Some actions protect, investigate, block, or attack. During the day, living players discuss and vote. If nominated, a player may defend themselves; they are executed only when YES votes outnumber NO votes. Each role has its own team or individual victory condition.</p></div>${sections}</section></div>`;
 }
 
 function renderLobbyBrowser() {
@@ -421,7 +528,7 @@ function renderLobby() {
   const playerItems = state.players.map(player => `<div class="player"><button class="avatar-trigger" data-action="show-avatar" data-player-id="${player.id}" aria-label="View ${player.name}'s avatar"><img class="avatar" src="${avatarFor(player.gender)}" alt=""></button><div class="player-name">${player.name}${player.id === network.playerId ? ' <span style="color:var(--red)">(you)</span>' : ''}${player.id === network.hostId ? ' <span class="status"></span> Host' : ''}</div></div>`).join('');
   const confirmModal = state.confirmDeleteLobby ? `<div class="modal-overlay"><div class="modal"><p>Do you confirm deleting the lobby "${state.confirmDeleteLobby}"?</p><div class="modal-actions"><button class="cta" data-action="confirm-delete-lobby">Yes</button><button class="secondary" data-action="cancel-delete-lobby">No</button></div></div></div>` : state.confirmLeaveLobby ? `<div class="modal-overlay"><div class="modal"><p>Do you confirm leaving the lobby "${network.roomCode}"?</p><div class="modal-actions"><button class="cta" data-action="confirm-leave-lobby">Yes</button><button class="secondary" data-action="cancel-leave-lobby">No</button></div></div></div>` : '';
   const membershipControl = isHost ? `<button class="secondary" data-delete-lobby="${network.roomCode}">Delete lobby</button>` : `<button class="secondary" data-action="leave-lobby">Leave lobby</button>`;
-  app.innerHTML = `<section class="game"><header class="topbar"><div class="brand"><span class="brand-mark">✦</span> Village After Dark</div><div class="topbar-right"><div class="phase-pill"><span class="phase-dot"></span>Lobby · ${network.roomCode}</div>${renderProfileBar()}</div></header><div class="board"><div class="board-grid"><section class="scene"><div class="scene-heading"><div><div class="scene-kicker">Waiting for players</div><h1>${network.roomCode}</h1></div></div><p class="phase-message">${network.playerCount}/${network.minimumPlayers} players minimum · ${lobbyMessage}</p><div class="action-panel"><h3>Players</h3><div class="player-list">${playerItems}</div><div class="action-row">${isHost ? `<button class="primary" data-action="start" ${canStart ? '' : 'disabled'}>Start game</button>` : ''}<button class="secondary" data-action="browse-lobbies">Browse lobbies</button>${membershipControl}</div></div></section><aside class="sidebar">${renderChat()}</aside></div></div></section>${confirmModal}`;
+  app.innerHTML = `<section class="game"><header class="topbar"><div class="brand"><span class="brand-mark">✦</span> Village After Dark</div><div class="topbar-right"><div class="phase-pill"><span class="phase-dot"></span>Lobby · ${network.roomCode}</div>${renderProfileBar()}</div></header><div class="board"><div class="board-grid"><section class="scene"><div class="scene-heading"><div><div class="scene-kicker">Waiting for players</div><h1>${network.roomCode}</h1></div></div><p class="phase-message">${network.playerCount}/${network.maximumPlayers} players · ${lobbyMessage}</p><div class="action-panel"><h3>Players</h3><div class="player-list">${playerItems}</div><div class="action-row">${isHost ? `<button class="primary" data-action="start" ${canStart ? '' : 'disabled'}>Start game</button>` : ''}<button class="secondary" data-action="browse-lobbies">Browse lobbies</button>${membershipControl}</div></div></section><aside class="sidebar">${renderChat()}</aside></div></div></section>${confirmModal}`;
 }
 
 
@@ -430,13 +537,15 @@ function renderIdentity() {
 }
 
 function renderPlayerList() {
-  return `<div class="player-list">${state.players.map(player => { const teammate = Boolean(state.revealedRoles[player.id]); const showRole = player.self || player.revealed || !player.alive || teammate; const roleText = !player.alive ? `Role revealed · ${roleLabel(player.role)}` : showRole ? roleLabel(player.role) : 'Role hidden'; const showRoleImage = player.revealed || !player.alive; const avatarSrc = showRoleImage ? imageFor(player) : avatarFor(player.gender); return `<div class="player"><button class="avatar-trigger" data-action="show-avatar" data-player-id="${player.id}" aria-label="View ${player.name}'s ${showRoleImage ? 'role' : 'avatar'}"><img class="avatar" src="${avatarSrc}" alt=""></button><div class="player-name">${player.name}${player.self ? ' <span style="color:var(--red)">(you)</span>' : ''}<span class="player-role">${roleText}</span></div><span class="status ${player.alive ? '' : 'dead'}"></span></div>`; }).join('')}</div>`;
+  return `<div class="player-list">${state.players.map(player => { const teammate = Boolean(state.revealedRoles[player.id]); const showRole = player.self || player.revealed || !player.alive || teammate; const roleText = !player.alive ? `Role revealed · ${roleLabel(player.role)}` : showRole ? roleLabel(player.role) : 'Role hidden'; const showRoleImage = player.revealed || !player.alive; const avatarSrc = showRoleImage ? imageFor(player) : avatarFor(player.gender); return `<div class="player"><button class="avatar-trigger" data-action="show-avatar" data-player-id="${player.id}" aria-label="View ${player.name}'s ${showRoleImage ? 'role' : 'avatar'}"><img class="avatar ${showRoleImage ? 'role-thumbnail' : ''}" src="${avatarSrc}" alt=""></button><div class="player-name">${player.name}${player.self ? ' <span style="color:var(--red)">(you)</span>' : ''}<span class="player-role">${roleText}</span></div><span class="status ${player.alive ? '' : 'dead'}"></span></div>`; }).join('')}</div>`;
 }
 
 function renderDefensePanel() {
   const isNominee = currentPlayer().name === state.selected;
   const messages = state.defenseMessages.map(message => `<div class="chat-line"><strong>${message.author}</strong> ${message.text}</div>`).join('');
-  const input = isNominee ? '<form class="chat-input" data-defense><input name="message" maxlength="500" placeholder="Make your case..." autocomplete="off"><button aria-label="Send defense">↑</button></form>' : '<div class="locked">The nominee has one minute to speak.</div>';
+  const input = isNominee && state.silenced
+    ? '<div class="locked">◼ You have been silenced for today. I can\'t write in the chat.</div>'
+    : isNominee ? '<form class="chat-input" data-defense><input name="message" maxlength="500" placeholder="Make your case..." autocomplete="off"><button aria-label="Send defense">↑</button></form>' : '<div class="locked">The nominee has one minute to speak.</div>';
   return `<div class="action-panel"><h3>${state.selected} has the floor</h3><p>One minute to defend themselves. The village listens, then makes the final decision.</p><div class="chat-log">${messages || '<div class="locked">No defense submitted yet.</div>'}</div>${input}</div>`;
 }
 
@@ -446,6 +555,7 @@ function renderActionPanel() {
   if (state.phase === 'preparation') return `<div class="action-panel"><h3>Roles assigned</h3><p>The village is preparing. Your first Night begins when the preparation timer reaches zero.</p><div class="locked">◼ First Night starts automatically</div></div>`;
   if (state.phase === 'night') {
     if (state.activeTurnJailed) return `<div class="action-panel"><h3>You are jailed</h3><p>You cannot perform a night action this turn. Click Proceed to continue.</p><div class="action-row"><button class="primary" data-action="night-skip">Proceed</button></div></div>`;
+    if (state.gamesterPrompt) return `<div class="action-panel"><h3>A secret game awaits</h3><p>Choose rock, paper, or scissors in the image prompt. Your opponent's identity is hidden.</p><div class="locked">◼ Your response is required before Night continues</div></div>`;
     if (me.role === 'Hunter' && state.nightNumber === 1) return `<div class="action-panel"><h3>Hunter action unavailable</h3><p>The Hunter cannot shoot during the first night. Your turn will pass automatically.</p><div class="locked">◼ First-night restriction</div></div>`;
     if (me.role === 'Trapper' && state.trapperTrapsRemaining <= 0) return `<div class="action-panel"><h3>No traps remaining</h3><p>You have used both Trapper traps for this game.</p><div class="locked">◼ Traps exhausted</div></div>`;
     if (me.role !== state.activeRole) return `<div class="action-panel"><h3>Waiting for another player</h3><p>Night actions resolve in order. Please wait for your turn.</p><div class="locked">◼ Another player is acting</div></div>`;
@@ -453,31 +563,38 @@ function renderActionPanel() {
     if (state.activeTurnFirstNightUnavailable) return `<div class="action-panel"><h3>Crossbowman action unavailable</h3><p>You cannot shoot during the first night. You have ${state.crossbowArrowsRemaining} arrows remaining.</p><div class="action-row"><button class="primary" data-action="night-skip">Proceed</button><span class="locked">First-night restriction</span></div></div>`;
     if (me.role === 'Crossbowman' && state.crossbowArrowsRemaining <= 0) return `<div class="action-panel"><h3>No arrows remaining</h3><p>You have used both Crossbowman arrows for this game.</p><div class="locked">◼ Ammunition exhausted</div></div>`;
     if (state.activeTurnInformational) return `<div class="action-panel"><h3>Master Thief's choice</h3><p>${state.activeTurnInfoTarget ? `The Master Thief has chosen <strong>${state.activeTurnInfoTarget}</strong> as tonight's target.` : 'The Master Thief did not choose a target tonight.'}</p><div class="action-row"><button class="primary" data-action="night-skip">Continue</button><span class="locked">The Master Thief leads the attack</span></div></div>`;
+    if (me.role === 'Gamester') {
+      if (state.gamesterWaitingForResponse) return `<div class="action-panel"><h3>Game in progress</h3><p>Your choice is locked. The other player is making an anonymous choice.</p><div class="locked">◼ Night continues after their response</div></div>`;
+      return `<div class="action-panel"><h3>Gamester action</h3><p>Choose one living player to challenge, or pass this turn.</p><div class="target-grid">${alivePlayers().filter(player => !player.self).map(player => `<button class="target" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target" data-action="gamester-pass">Play with no one</button></div></div>`;
+    }
+    const excludeThiefTeammates = roles[me.role]?.team === 'Thieves'
+      && (me.role !== 'ThiefShaman' || state.activeTurnShamanKilling);
+    const targets = alivePlayers().filter(player => !player.self
+      && !(excludeThiefTeammates && roles[player.role]?.team === 'Thieves'));
     if (me.role === 'ThiefShaman') {
       const targetInfo = state.activeTurnInfoTarget ? `The Thieves have chosen <strong>${state.activeTurnInfoTarget}</strong> as their kill target tonight.` : 'The Thieves have not selected a kill target yet.';
       const prompt = state.activeTurnShamanKilling
         ? 'Both the Master Thief and Thief are dead. Choose a player to kill, or pass.'
         : 'Choose one player to silence during the day, or pass.';
-      return `<div class="action-panel"><h3>Thief Shaman action</h3><p>${targetInfo}</p><p>${prompt}</p><div class="target-grid">${alivePlayers().filter(player => !player.self).map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select anyone</button></div><div class="action-row"><button class="primary" data-action="confirm">${!state.selected || state.selected === 'none' ? 'Pass night action' : state.activeTurnShamanKilling ? 'Choose kill target' : 'Silence selected player'}</button><span class="locked">${state.activeTurnShamanKilling ? 'Your selection is the Thieves attack' : 'Silence lasts through the day'}</span></div></div>`;
+      return `<div class="action-panel"><h3>Thief Shaman action</h3><p>${targetInfo}</p><p>${prompt}</p><div class="target-grid">${targets.map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select anyone</button></div><div class="action-row"><button class="primary" data-action="confirm">${!state.selected || state.selected === 'none' ? 'Pass night action' : state.activeTurnShamanKilling ? 'Choose kill target' : 'Silence selected player'}</button><span class="locked">${state.activeTurnShamanKilling ? 'Your selection is the Thieves attack' : 'Silence lasts through the day'}</span></div></div>`;
     }
     if (me.role === 'ThiefSeer') {
       const prompt = state.activeTurnSeerKilling
         ? 'The Master Thief, Thief, and Thief Shaman are dead. Choose a player for the Thieves to kill, or pass.'
         : 'Choose one player to learn their role with the Thieves team, or pass.';
-      return `<div class="action-panel"><h3>Thief Seer action</h3><p>${prompt}</p><div class="target-grid">${alivePlayers().filter(player => !player.self).map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select anyone</button></div><div class="action-row"><button class="primary" data-action="confirm">${!state.selected || state.selected === 'none' ? 'Pass night action' : state.activeTurnSeerKilling ? 'Choose kill target' : 'Check role'}</button><span class="locked">${state.activeTurnSeerKilling ? 'Your selection is the Thieves attack' : 'Role result is shared privately with the team'}</span></div></div>`;
+      return `<div class="action-panel"><h3>Thief Seer action</h3><p>${prompt}</p><div class="target-grid">${targets.map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select anyone</button></div><div class="action-row"><button class="primary" data-action="confirm">${!state.selected || state.selected === 'none' ? 'Pass night action' : state.activeTurnSeerKilling ? 'Choose kill target' : 'Check role'}</button><span class="locked">${state.activeTurnSeerKilling ? 'Your selection is the Thieves attack' : 'Role result is shared privately with the team'}</span></div></div>`;
     }
     if (me.role === 'Judge') return `<div class="action-panel"><h3>Judge action</h3><p>Select two different living players to learn whether they are teammates or rivals. You may also pass without choosing anyone.</p><div class="target-grid">${alivePlayers().filter(player => !player.self).map(player => `<button class="target ${state.judgeTargets.includes(player.name) ? 'selected' : ''}" data-judge-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.judgePass ? 'selected' : ''}" data-judge-pass>Do not select anyone</button></div><div class="action-row"><button class="primary" data-action="confirm" ${state.judgeTargets.length !== 2 && !state.judgePass ? 'disabled' : ''}>${state.judgePass ? 'Pass night action' : 'Compare selected players'}</button><span class="locked">${state.judgePass ? 'Action passed' : `${state.judgeTargets.length}/2 selected`}</span></div></div>`;
     if (me.role === 'Trapper') return `<div class="action-panel"><h3>Trapper action</h3><p>Choose whether to set a trap on yourself tonight. Every visitor will die. You have ${state.trapperTrapsRemaining} traps remaining.</p><div class="target-grid"><button class="target ${state.selected === me.name ? 'selected' : ''}" data-target="${me.name}">Set a trap on yourself</button><button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not place a trap</button></div><div class="action-row"><button class="primary" data-action="confirm">${state.selected === me.name ? 'Set trap' : 'Pass night action'}</button><span class="locked">Traps are spent only when placed</span></div></div>`;
       const action = currentRoleDefinition().description;
-    const isThief = ['MasterThief', 'Thief'].includes(me.role);
-    return `<div class="action-panel"><h3>${roleLabel(me.role)} action</h3><p>${action}${me.role === 'Crossbowman' ? ` (${state.crossbowArrowsRemaining} arrows remaining)` : ''}. Choose a player or pass your turn. Your choice will resolve when the night timer ends.</p><div class="target-grid">${alivePlayers().filter(player => !player.self && !(isThief && ['MasterThief', 'Thief'].includes(player.role))).map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select</button></div><div class="action-row"><button class="primary" data-action="confirm">Confirm action</button><span class="locked">Night resolves automatically</span></div></div>`;
+    return `<div class="action-panel"><h3>${roleLabel(me.role)} action</h3><p>${action}${me.role === 'Crossbowman' ? ` (${state.crossbowArrowsRemaining} arrows remaining)` : ''}. Choose a player or pass your turn. Your choice will resolve when the night timer ends.</p><div class="target-grid">${targets.map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}">${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none">Do not select</button></div><div class="action-row"><button class="primary" data-action="confirm">Confirm action</button><span class="locked">Night resolves automatically</span></div></div>`;
   }
   if (state.phase === 'day') return `<div class="action-panel"><h3>Speak before the vote</h3><p>The village has four minutes to compare stories. The chat is open again.</p><div class="action-row"><span class="locked">Waiting for the phase timer</span><button class="secondary" data-action="proceed-to-voting" ${state.dayProceeding ? 'disabled' : ''}>${state.dayProceeding ? 'Waiting for everyone' : 'Proceed to voting'}</button></div><small>${state.dayProceedCount || 0}/${alivePlayers().length} ready</small></div>`;
   if (state.phase === 'vote') return `<div class="action-panel"><h3>Who goes to the gallows?</h3><p>Vote for one living player or choose no gallows. A unique plurality opens Defense.</p><div class="target-grid">${alivePlayers().filter(player => !player.self).map(player => `<button class="target ${state.selected === player.name ? 'selected' : ''}" data-target="${player.name}" ${state.nominationVoted ? 'disabled' : ''}>${player.name}</button>`).join('')}<button class="target ${state.selected === 'none' ? 'selected' : ''}" data-target="none" ${state.nominationVoted ? 'disabled' : ''}>No gallows</button></div><div class="action-row"><button class="primary" data-action="nomination-vote" ${state.nominationVoted ? 'disabled' : ''}>${state.nominationVoted ? 'Vote submitted' : 'Cast nomination vote'}</button></div><small>${state.nominationVoteCount || 0} votes received</small></div>`;
   if (state.phase === 'defense') return renderDefensePanel();
   if (state.phase === 'final') {
     if (me.name === state.selected) return `<div class="action-panel"><h3>Final decision</h3><p>You are on the gallows and cannot vote on your own fate.</p><div class="locked">The village is deciding.</div><small>${state.finalVoteCount || 0} votes received</small></div>`;
-    return `<div class="action-panel"><h3>Final decision</h3><p>Cast your vote. The majority decides whether ${state.selected} is executed.</p><div class="action-row"><button class="primary" data-action="final-vote" data-choice="yes" ${state.finalVoted ? 'disabled' : ''}>${state.finalVoted ? 'Vote submitted' : 'YES, execute'}</button><button class="secondary" data-action="final-vote" data-choice="no" ${state.finalVoted ? 'disabled' : ''}>${state.finalVoted ? 'Vote submitted' : 'NO, save'}</button></div><small>${state.finalVoteCount || 0} votes received</small></div>`;
+    return `<div class="action-panel"><h3>Final decision</h3><p>Cast your vote. The majority decides whether ${state.selected} is executed.</p><div class="action-row"><button class="primary" data-action="final-vote" data-choice="no" ${state.finalVoted ? 'disabled' : ''}>${state.finalVoted ? 'Vote submitted' : 'Save'}</button><button class="danger" data-action="final-vote" data-choice="yes" ${state.finalVoted ? 'disabled' : ''}>${state.finalVoted ? 'Vote submitted' : 'Execute'}</button></div><small>${state.finalVoteCount || 0} votes received</small></div>`;
   }
   if (state.phase === 'game-over') return `<div class="action-panel"><h3>${state.winner} victory</h3><p>The game has ended. The surviving roles and final result are now revealed.</p></div>`;
   return `<div class="action-panel"><h3>The village is ready.</h3><p>Start the demo to assign roles and begin the first night.</p></div>`;
@@ -552,6 +669,8 @@ function normalizeProductionView() {
 function render() {
   const priorChatLog = app.querySelector('.chat-log');
   const priorChatScrollTop = priorChatLog ? priorChatLog.scrollTop : null;
+  const priorTutorial = app.querySelector('.tutorial-dialog');
+  const priorTutorialScrollTop = priorTutorial ? priorTutorial.scrollTop : null;
   const focusedInput = document.activeElement?.matches('[data-chat] input[name="message"], [data-defense] input[name="message"]') ? document.activeElement : null;
   const focusedSelector = focusedInput ? (focusedInput.closest('[data-chat]') ? '[data-chat] input[name="message"]' : '[data-defense] input[name="message"]') : null;
   const focusedValue = focusedInput ? focusedInput.value : null;
@@ -574,57 +693,69 @@ function render() {
     app.querySelector('.avatar-modal-close')?.focus();
   }
   if (state.teammatePreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay avatar-preview-overlay" data-action="close-teammate"><div class="avatar-preview" data-modal-content role="dialog" aria-modal="true" aria-label="${state.teammatePreview.name}'s role"><button class="avatar-modal-close" data-action="close-teammate" aria-label="Close teammate reveal">&times;</button><img src="${state.teammatePreview.src}" alt="${state.teammatePreview.name}"><p>${state.teammatePreview.name} · ${roleLabel(state.teammatePreview.role)}</p></div></div>`);
-    app.querySelector('.avatar-modal-close')?.focus();
+    const roster = state.teammatePreview.members.map(member => {
+      const name = member.name.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+      return `<li>${name}: ${roleLabel(member.role)}</li>`;
+    }).join('');
+    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay thieves-team-overlay" data-action="close-teammate"><div class="thieves-team-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="Thieves team" tabindex="-1"><img src="GameImages/Roles/Evil/Team/1.ThievesTeam.png" alt="Thieves team"><ul class="thieves-team-roster" aria-label="Team members">${roster}</ul></div></div>`);
+    app.querySelector('.thieves-team-dialog')?.focus();
   }
   if (state.investigationPreview) {
     app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-investigation"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="Investigation result"><button class="avatar-modal-close victory-close" data-action="close-investigation" aria-label="Close investigation result">&times;</button><img class="victory-image" src="${state.investigationPreview.src}" alt="Investigation result"><p class="investigation-name">${state.investigationPreview.target}</p></div></div>`);
     app.querySelector('.victory-close')?.focus();
   }
   if (state.judgePreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-judge"><div class="victory-dialog full-height-result-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="Judge result: ${state.judgePreview.relation}"><button class="avatar-modal-close victory-close" data-action="close-judge" aria-label="Close Judge result">&times;</button><img class="victory-image judge-result-image" src="${state.judgePreview.src}" alt="The selected players are ${state.judgePreview.relation}"><p class="investigation-name">${state.judgePreview.players.join(' and ')} are ${state.judgePreview.relation}.</p></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-judge', state.judgePreview.src, `Judge result: ${state.judgePreview.relation}`, `Judge result: ${state.judgePreview.relation}`));
   }
   if (state.killPreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-kill"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="You were killed"><button class="avatar-modal-close victory-close" data-action="close-kill" aria-label="Close death reveal">&times;</button><img class="victory-image" src="${state.killPreview.src}" alt="Killed by ${roleLabel(state.killPreview.killerRole)}"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-kill', state.killPreview.src, `Killed by ${roleLabel(state.killPreview.killerRole)}`, 'You were killed'));
   }
   if (state.shamanSilencePreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-shaman-silence"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="You have been silenced"><button class="avatar-modal-close victory-close" data-action="close-shaman-silence" aria-label="Close silence notice">&times;</button><img class="victory-image" src="${shamanSilenceImage}" alt="The Thief Shaman has silenced you for the day"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-shaman-silence', shamanSilenceImage, 'Thief Shaman silence', 'You have been silenced'));
   }
   if (state.thiefSeerPreview) {
     app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-thief-seer"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="Thief Seer role result"><button class="avatar-modal-close victory-close" data-action="close-thief-seer" aria-label="Close Thief Seer result">&times;</button><img class="victory-image" src="${thiefSeerVisionImage}" alt="Thief Seer vision"><p class="investigation-name">${state.thiefSeerPreview.target} · ${roleLabel(state.thiefSeerPreview.role)}</p></div></div>`);
     app.querySelector('.victory-close')?.focus();
   }
   if (state.visitorPreview) {
-    const names = state.visitorPreview.visitors.join(', ');
+    const names = state.visitorPreview.visitors?.join(', ') || '';
     const role = state.visitorPreview.role;
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-visitor"><div class="victory-dialog full-height-result-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="${role} result"><button class="avatar-modal-close victory-close" data-action="close-visitor" aria-label="Close ${role} result">&times;</button><img class="victory-image visitor-result-image" src="${state.visitorPreview.src}" alt="${role} result">${names ? `<p class="investigation-name">${state.visitorPreview.target} was visited by: ${names}</p>` : ''}</div></div>`);
+    const resultNames = role === 'Watcher' ? state.visitorPreview.destinations.join(', ') : names;
+    const resultText = role === 'Watcher'
+      ? resultNames ? `${state.visitorPreview.target} went to: ${resultNames}` : `${state.visitorPreview.target} did not visit anyone.`
+      : resultNames ? `${state.visitorPreview.target} was visited by: ${resultNames}` : '';
+    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-visitor"><div class="victory-dialog full-height-result-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="${role} result"><button class="avatar-modal-close victory-close" data-action="close-visitor" aria-label="Close ${role} result">&times;</button><img class="victory-image visitor-result-image" src="${state.visitorPreview.src}" alt="${role} result">${resultText ? `<p class="investigation-name">${resultText}</p>` : ''}</div></div>`);
     app.querySelector('.victory-close')?.focus();
+  }
+  if (state.gamesterPrompt || state.gamesterTarget) {
+    const title = state.gamesterPrompt ? 'An anonymous opponent challenged you' : 'Choose your move';
+    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay gamester-overlay"><div class="victory-dialog gamester-dialog" role="dialog" aria-modal="true" aria-label="${title}"><div class="gamester-image-choices" role="group" aria-label="Choose rock, scissors, or paper"><img class="victory-image" src="${gamesterGameImage}" alt="Choose a move by clicking its panel"><button class="gamester-image-option gamester-rock" data-gamester-choice="rock" aria-label="Choose rock"></button><button class="gamester-image-option gamester-scissors" data-gamester-choice="scissors" aria-label="Choose scissors"></button><button class="gamester-image-option gamester-paper" data-gamester-choice="paper" aria-label="Choose paper"></button></div></div></div>`);
   }
   if (state.blockedPreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-blocked"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="You were blocked"><button class="avatar-modal-close victory-close" data-action="close-blocked" aria-label="Close blocked notice">&times;</button><img class="victory-image" src="${blockedImage}" alt="Blocked by the Tavern Keeper"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-blocked', blockedImage, 'Blocked by the Tavern Keeper', 'You were blocked'));
   }
   if (state.jailPreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-jail"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="You have been jailed"><button class="avatar-modal-close victory-close" data-action="close-jail" aria-label="Close jail notice">&times;</button><img class="victory-image" src="${jailedImage}" alt="The Jailor has jailed you for the night"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-jail', jailedImage, 'The Jailor has jailed you', 'You have been jailed'));
   }
   if (state.healedPreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-healed"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="Someone was healed"><button class="avatar-modal-close victory-close" data-action="close-healed" aria-label="Close healing notice">&times;</button><img class="victory-image" src="${healedImage}" alt="A player was healed"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-healed', healedImage, 'A player was healed', 'Healing result'));
   }
   if (state.phase !== 'game-over') state.victoryDismissed = false;
   const victorySrc = state.phase === 'game-over' && !state.victoryDismissed ? victoryImageFor(state.winner) : null;
-  if (victorySrc && !state.gallowsPreview) {
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-victory"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="${state.winner} victory"><button class="avatar-modal-close victory-close" data-action="close-victory" aria-label="Close victory screen">&times;</button><img class="victory-image" src="${victorySrc}" alt="${state.winner} victory"></div></div>`);
-    app.querySelector('.victory-close')?.focus();
+  if (victorySrc && !state.gallowsPreview && !state.killPreview) {
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-victory', victorySrc, `${state.winner} victory`, `${state.winner} victory`));
   }
   if (state.gallowsPreview && state.screen === 'game') {
     const description = state.gallowsPreview === 'kill' ? 'You were executed at the gallows' : 'You survived the gallows';
-    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay victory-overlay" data-action="close-gallows"><div class="victory-dialog" data-modal-content role="dialog" aria-modal="true" aria-label="${description}"><button class="avatar-modal-close victory-close" data-action="close-gallows" aria-label="Close gallows result">&times;</button><img class="victory-image" src="${gallowsImages[state.gallowsPreview]}" alt="${description}"></div></div>`);
-    app.querySelector('[data-action="close-gallows"] .victory-close')?.focus();
+    app.insertAdjacentHTML('beforeend', renderImageOnlyDialog('close-gallows', gallowsImages[state.gallowsPreview], description, 'Gallows result'));
+  }
+  if (state.tutorialOpen) app.insertAdjacentHTML('beforeend', renderTutorial());
+  if (state.tutorialImagePreview) {
+    app.insertAdjacentHTML('beforeend', `<div class="modal-overlay tutorial-image-overlay" data-action="close-tutorial-image"><div class="tutorial-image-dialog" data-tutorial-image-dialog role="dialog" aria-modal="true" aria-label="${state.tutorialImagePreview.label}"><img src="${state.tutorialImagePreview.src}" alt="${state.tutorialImagePreview.label}"></div></div>`);
+  }
+  if (priorTutorialScrollTop !== null) {
+    const tutorial = app.querySelector('.tutorial-dialog');
+    if (tutorial) tutorial.scrollTop = priorTutorialScrollTop;
   }
   const chatLog = app.querySelector('.chat-log');
   if (chatLog) {
@@ -651,6 +782,26 @@ app.addEventListener('click', event => {
   const lobbyCode = event.target.closest('[data-lobby-code]')?.dataset.lobbyCode;
   const deleteLobbyCode = event.target.closest('[data-delete-lobby]')?.dataset.deleteLobby;
   const choice = event.target.closest('[data-choice]')?.dataset.choice;
+  const gamesterChoice = event.target.closest('[data-gamester-choice]')?.dataset.gamesterChoice;
+  const tutorialImage = event.target.closest('[data-tutorial-image]');
+  if (tutorialImage) {
+    state.tutorialImagePreview = { src: tutorialImage.dataset.tutorialImage, label: tutorialImage.dataset.tutorialImageLabel };
+    render();
+    return;
+  }
+  if (action === 'close-tutorial-image') {
+    if (event.target.closest('[data-tutorial-image-dialog]') && !event.target.closest('.tutorial-image-close')) return;
+    state.tutorialImagePreview = null;
+    render();
+    return;
+  }
+  if (action === 'open-tutorial') { state.tutorialOpen = true; render(); return; }
+  if (action === 'close-tutorial') {
+    if (event.target.closest('[data-tutorial-content]') && !event.target.closest('.tutorial-close')) return;
+    state.tutorialOpen = false;
+    render();
+    return;
+  }
   if (deleteLobbyCode) { state.confirmDeleteLobby = deleteLobbyCode; render(); return; }
   if (judgeTarget) {
     state.judgePass = false;
@@ -666,9 +817,33 @@ app.addEventListener('click', event => {
     render();
     return;
   }
-  if (target) { state.selected = target; render(); return; }
+  if (gamesterChoice) {
+    if (state.gamesterPrompt) sendNetwork({ type: 'game-action', action: 'gamester-response', choice: gamesterChoice });
+    else if (state.gamesterTarget) sendNetwork({ type: 'game-action', action: 'night-action', target: state.gamesterTarget, choice: gamesterChoice });
+    state.gamesterPrompt = false;
+    state.gamesterTarget = null;
+    state.gamesterChoicesOpen = false;
+    state.gamesterWaitingForResponse = !state.gamesterPrompt && state.activeRole === 'Gamester';
+    render();
+    return;
+  }
+  if (target) {
+    if (state.phase === 'night' && currentPlayer().role === 'Gamester' && state.activeRole === 'Gamester') {
+      state.gamesterTarget = target;
+      state.gamesterChoicesOpen = true;
+    } else state.selected = target;
+    render();
+    return;
+  }
   if (lobbyCode) { sendNetwork({ type: 'join-lobby', code: lobbyCode }); return; }
   if (!action) return;
+  if (action === 'gamester-pass') {
+    sendNetwork({ type: 'game-action', action: 'night-action', target: 'none' });
+    state.gamesterTarget = null;
+    state.gamesterChoicesOpen = false;
+    render();
+    return;
+  }
   if (action === 'show-avatar') {
     const playerId = actionControl.dataset.playerId;
     const player = playerId === 'self' ? { name: network.name, gender: network.gender } : state.players.find(candidate => candidate.id === playerId);
@@ -699,7 +874,7 @@ app.addEventListener('click', event => {
     return;
   }
   if (action === 'close-teammate') {
-    if (event.target.closest('[data-modal-content]') && !event.target.closest('.avatar-modal-close')) return;
+    if (event.target.closest('[data-modal-content]')) return;
     state.teammatePreview = null;
     render();
     return;
@@ -783,7 +958,7 @@ app.addEventListener('click', event => {
   if (action === 'create-lobby') {
     const input = document.querySelector('[data-lobby-name]');
     const name = input ? input.value.trim() : '';
-    if (!name) { state.connectionMessage = 'Enter a name for your lobby.'; render(); return; }
+    if (!name) { showConnectionMessage('Enter a name for your lobby.'); render(); return; }
     sendNetwork({ type: 'create-lobby', name });
     return;
   }
@@ -809,6 +984,28 @@ app.addEventListener('click', event => {
 });
 
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && (state.gallowsPreview || state.killPreview || state.judgePreview || state.blockedPreview || state.jailPreview || state.shamanSilencePreview || state.healedPreview || state.phase === 'game-over' && !state.victoryDismissed)) {
+    state.gallowsPreview = null;
+    state.killPreview = null;
+    state.judgePreview = null;
+    state.blockedPreview = false;
+    state.jailPreview = false;
+    state.shamanSilencePreview = false;
+    state.healedPreview = false;
+    if (state.phase === 'game-over') state.victoryDismissed = true;
+    render();
+    return;
+  }
+  if (event.key === 'Escape' && state.tutorialImagePreview) {
+    state.tutorialImagePreview = null;
+    render();
+    return;
+  }
+  if (event.key === 'Escape' && state.tutorialOpen) {
+    state.tutorialOpen = false;
+    render();
+    return;
+  }
   if (event.key === 'Escape' && state.gallowsPreview) {
     state.gallowsPreview = null;
     render();

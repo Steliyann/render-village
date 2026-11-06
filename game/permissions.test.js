@@ -38,6 +38,7 @@ test('only living players can submit votes in vote phases', () => {
 
 test('only the living nominee can submit defense messages', () => {
   assert.equal(canSubmitDefense({ player: alive, nominee: 'p1', phase: 'defense' }), true);
+  assert.equal(canSubmitDefense({ player: { ...alive, silenced: true }, nominee: 'p1', phase: 'defense' }), false);
   assert.equal(canSubmitDefense({ player: { id: 'p2', name: 'p2', alive: true }, nominee: 'p1', phase: 'defense' }), false);
   assert.equal(canSubmitDefense({ player: dead, nominee: 'p1', phase: 'defense' }), false);
   assert.equal(canSubmitDefense({ player: alive, nominee: 'p1', phase: 'final' }), false);

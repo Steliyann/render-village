@@ -187,6 +187,12 @@ The Judge is defined as an available role but is not included in the preset scen
 
 **Alignment:** Townsfolk
 
+#### Shadow and Watcher
+
+Both roles choose a living player to investigate at night. Shadow learns which players visited the chosen player. Watcher instead learns where the chosen player went. Their results are private and do not reveal roles or intentions.
+
+**Alignment:** Townsfolk
+
 #### Hunter
 
 The Hunter can shoot one player during the night.
@@ -208,7 +214,7 @@ The Crossbowman may select one living player to shoot during a night, but cannot
 
 #### Trapper
 
-At night, the Trapper may place a trap on themselves or pass. The Trapper has two traps for the entire game; each placed trap consumes one use, while passing or being blocked does not. Every player who visits the Trapper while a trap is set dies and privately receives the Trapper action image when the day begins. The Trapper acts at night priority 7 and is not included in the preset scenarios.
+At night, the Trapper may place a trap on themselves or pass. The Trapper has two traps for the entire game; each placed trap consumes one use, while passing or being blocked does not. Every player who visits the Trapper while a trap is set dies and privately receives the Trapper action image when the day begins. The Trapper acts at night priority 15 and is not included in the preset scenarios.
 
 **Alignment:** Townsfolk
 
@@ -312,13 +318,15 @@ If the Master Thief, Thief, and Thief Shaman are all dead, the Seer can no longe
 
 ### 6.3 Independent Evil Roles
 
+Independent Evil roles cannot be killed at night by the Thieves or another Independent Evil role. Townsfolk night attacks can still kill them. The Werewolf remains immune to all night kills.
+
 #### Werewolf
 
 The Werewolf is an Independent Evil role and plays alone.
 
 The Werewolf cannot be killed during the night. If another player attempts to kill the Werewolf during the night, the attack has no effect.
 
-The Werewolf becomes active on every even-numbered night, also called a Full Moon. During a Full Moon night, the Werewolf can select one player to kill.
+The Werewolf becomes active on every even-numbered night, also called a Full Moon. During a Full Moon night, the Werewolf can select one player to kill. Its night priority is 8.
 
 ##### Werewolf Visitor Interaction
 
@@ -335,6 +343,12 @@ The Jester is an Independent Evil role and plays independently.
 The Jester's objective is to be eliminated through the daytime voting process. If the Jester is successfully executed by the daytime vote, the Jester wins the game.
 
 The Jester therefore attempts to convince other players that they are suspicious or evil.
+
+#### Gamester
+
+The Gamester is an Independent Evil role that acts at night with priority 7. The Gamester may pass or choose one other living player and select rock, paper, or scissors using the game image. If the chosen player is not jailed, they immediately receive the same image and secretly choose their move; they are not told who challenged them. The next night turn begins after their response, or when their response timer expires.
+
+At the beginning of the day, a Gamester win (rock beats scissors, scissors beats paper, and paper beats rock) kills the challenged player. A loss or draw has no effect. A jailed player does not receive or participate in the challenge. The Gamester wins independently after causing two such deaths.
 
 ## 7. Game Start
 
@@ -373,12 +387,13 @@ Night actions occur in a fixed sequence:
 1. Jailor
 2. Tavern Keeper
 3. Master Thief, Thief, Thief Shaman, and Thief Seer
-4. Werewolf, only during a Full Moon
-5. Militia and Judge
-6. Healer
-7. Guard
-8. Hunter, Crossbowman, and Trapper
-9. Shadow and Watcher
+4. Gamester (priority 7)
+5. Werewolf, only during a Full Moon (priority 8)
+6. Militia and Judge
+7. Healer
+8. Guard
+9. Hunter, Crossbowman, and Trapper
+10. Shadow and Watcher
 
 The order is important because earlier actions may affect roles that act later. For example, if the Tavern Keeper blocks the Militia, the Militia is unable to investigate when its turn begins.
 
@@ -645,6 +660,7 @@ The game must support different victory conditions for:
 * Thieves
 * Werewolf
 * Jester
+* Gamester
 * Future roles
 
 ### 13.1 Townsfolk Victory
@@ -672,13 +688,17 @@ The Jester's victory condition is independent of the Townsfolk and Thieves victo
 
 If the Jester is executed by the daytime final vote, the Jester victory takes precedence over any team victory caused by that execution.
 
-### 13.5 Empty Game Result
+### 13.5 Gamester Victory
+
+The Gamester wins independently after successfully killing two players with its anonymous rock-paper-scissors challenges. Only actual deaths from winning challenges count. A living Gamester prevents Townsfolk victory until the Gamester is eliminated or wins.
+
+### 13.6 Empty Game Result
 
 If all players are dead or disconnected, the result is a **Draw**.
 
 ## 14. Fixed Scenarios by Player Count
 
-The initial version supports predefined role configurations for 4–11 players. Each player count has a specific role configuration.
+The initial version supports predefined role configurations for 4–12 players. Each player count has a specific role configuration.
 
 | Players | Role configuration                                                                                            |
 | ------: | ------------------------------------------------------------------------------------------------------------- |
@@ -690,6 +710,7 @@ The initial version supports predefined role configurations for 4–11 players. 
 |       9 | 2 Villagers, 1 Healer, 1 Militia, 1 Master Thief, 1 Thief, 1 Werewolf, 1 Tavern Keeper, 1 Jester             |
 |      10 | 2 Villagers, 1 Healer, 1 Militia, 1 Master Thief, 1 Thief, 1 Werewolf, 1 Shadow, 1 Jester, 1 Tavern Keeper    |
 |      11 | 3 Villagers, 1 Healer, 1 Militia, 1 Master Thief, 1 Thief, 1 Werewolf, 1 Shadow, 1 Jester, 1 Tavern Keeper    |
+|      12 | 1 Townsfolk Support, 2 Townsfolk Investigate, 1 Townsfolk Blocking, 1 Townsfolk Killing, 2 Thieves Killing, 2 Thieves Support, 3 Independent Evil |
 
 ## 15. Scenario Configuration System
 
@@ -713,7 +734,6 @@ When the Host starts the game, the server selects the appropriate scenario based
 
 The system must support future scenarios for larger player counts, including potential scenarios for:
 
-* 12 players
 * 13 players
 * 14 players
 * 15 players

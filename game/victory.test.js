@@ -40,6 +40,16 @@ test('Jester execution takes precedence over team victory', () => {
   assert.equal(evaluateVictory(living('MasterThief', 'Jester'), { type: 'execution', role: 'Jester' }), 'Jester');
 });
 
+test('Gamester wins after two successful game kills, regardless of survival', () => {
+  assert.equal(evaluateVictory([{ role: 'Gamester', alive: true, gamesterKills: 1 }, { role: 'Villager', alive: true }]), null);
+  assert.equal(evaluateVictory([{ role: 'Gamester', alive: true, gamesterKills: 2 }, { role: 'Villager', alive: true }]), 'Gamester');
+  assert.equal(evaluateVictory([{ role: 'Gamester', alive: false, gamesterKills: 2 }, { role: 'Villager', alive: true }]), 'Gamester');
+});
+
+test('Gamester is a living independent threat, not Townsfolk', () => {
+  assert.equal(evaluateVictory(living('Gamester', 'Villager')), null);
+});
+
 test('No living players produce a draw', () => {
   assert.equal(evaluateVictory([{ role: 'Villager', alive: false }]), 'Draw');
 });

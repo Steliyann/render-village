@@ -55,6 +55,7 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .topbar-right { display: flex; align-items: center; gap: 20px; }
 .profile-bar { display: flex; align-items: center; gap: 10px; }
 .profile-name { font-weight: 700; font-size: .9rem; }
+.tutorial-trigger { padding: 8px 11px; font-size: .8rem; }
 .profile-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #d1c4b0; border: 1px solid var(--line); }
 .avatar-trigger { flex: 0 0 auto; display: grid; place-items: center; border: 0; padding: 0; background: transparent; }
 .avatar-trigger:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
@@ -83,6 +84,7 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .action-row { display: flex; gap: 10px; margin-top: 15px; }
 .secondary { border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 11px 15px; font-weight: 700; }
 .primary { border: 0; background: var(--green); color: white; padding: 11px 15px; font-weight: 700; }
+.danger { border: 0; background: var(--red); color: white; padding: 11px 15px; font-weight: 700; }
 
 .sidebar { display: flex; flex-direction: column; gap: 18px; }
 .panel { background: var(--cream); border: 1px solid var(--line); padding: 20px; }
@@ -93,6 +95,7 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .player { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .player:first-child { border-top: 0; padding-top: 0; }
 .avatar { width: 42px; height: 42px; object-fit: cover; background: #d1c4b0; }
+.avatar.role-thumbnail { object-fit: contain; }
 .player-name { flex: 1; font-weight: 700; font-size: .9rem; }
 .player-role { display: block; color: var(--muted); font-size: .72rem; font-weight: 400; margin-top: 2px; }
 .status { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
@@ -122,6 +125,31 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .modal { background: var(--cream); box-shadow: var(--shadow); padding: 28px 30px; max-width: 380px; width: calc(100% - 40px); text-align: center; }
 .modal p { margin: 0 0 20px; font-weight: 700; }
 .modal-actions { display: flex; gap: 12px; justify-content: center; }
+.tutorial-overlay { z-index: 80; padding: 20px; }
+.tutorial-image-overlay { z-index: 100; padding: 0; }
+.tutorial-image-dialog { position: relative; display: grid; place-items: center; width: fit-content; max-width: 100vw; max-height: 100vh; padding: 0; background: transparent; box-shadow: none; }
+.tutorial-image-dialog img { display: block; width: auto; height: auto; max-width: 100vw; max-height: 100vh; object-fit: contain; }
+.tutorial-dialog { position: relative; width: min(1050px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; padding: clamp(20px, 4vw, 42px); background: var(--cream); box-shadow: var(--shadow); }
+.tutorial-header { position: sticky; top: calc(-1 * clamp(20px, 4vw, 42px)); z-index: 2; display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin: calc(-1 * clamp(20px, 4vw, 42px)) calc(-1 * clamp(20px, 4vw, 42px)) 20px; padding: clamp(20px, 4vw, 42px); background: var(--cream); border-bottom: 1px solid var(--line); }
+.tutorial-header h2 { margin-top: 5px; font-size: clamp(2rem, 5vw, 3rem); }
+.tutorial-header p, .tutorial-intro p, .tutorial-section-heading p, .tutorial-role-copy p { color: var(--muted); line-height: 1.55; }
+.tutorial-header p { margin: 5px 0 0; }
+.tutorial-close { position: sticky; top: 0; flex: 0 0 34px; }
+.tutorial-intro { margin-bottom: 30px; padding: 20px; background: var(--paper); border-left: 4px solid var(--gold); }
+.tutorial-intro h3, .tutorial-section-heading h3 { font-size: 1.55rem; }
+.tutorial-intro p { margin: 8px 0 0; }
+.tutorial-section { margin: 32px 0; }
+.tutorial-section-heading { display: flex; gap: 18px; align-items: baseline; margin-bottom: 12px; }
+.tutorial-section-heading p { margin: 0; }
+.tutorial-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tutorial-role-card { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px; background: var(--paper); border: 1px solid var(--line); }
+.tutorial-role-art { display: flex; gap: 6px; justify-content: center; }
+.tutorial-image-button { display: block; padding: 0; border: 0; background: var(--paper-deep); cursor: zoom-in; }
+.tutorial-image-button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.tutorial-role-art img { display: block; width: 58px; height: 82px; object-fit: cover; background: var(--paper-deep); transition: transform .18s ease; }
+.tutorial-image-button:hover img { transform: scale(1.05); }
+.tutorial-role-copy h4 { margin: 0 0 5px; font-family: 'Fraunces', serif; font-size: 1.12rem; }
+.tutorial-role-copy p { margin: 0; font-size: .82rem; }
 .avatar-preview-overlay { padding: 20px; }
 .avatar-preview { position: relative; width: min(560px, 100%); max-height: calc(100vh - 40px); display: grid; justify-items: center; gap: 14px; padding: 42px 24px 20px; background: var(--cream); box-shadow: var(--shadow); }
 .avatar-preview img { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 150px); object-fit: contain; }
@@ -135,8 +163,24 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .avatar-modal-close { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border: 0; background: transparent; color: var(--ink); font-size: 1.8rem; line-height: 1; }
 .avatar-modal-close:hover, .avatar-modal-close:focus-visible { color: var(--red); }
 .victory-overlay { padding: 20px; z-index: 40; }
+.image-only-overlay { z-index: 50; padding: 0; }
+.image-only-dialog { display: grid; place-items: center; width: fit-content; max-width: 100vw; max-height: 100vh; padding: 0; background: transparent; box-shadow: none; line-height: 0; }
+.image-only-dialog img { display: block; width: auto; height: auto; max-width: 100vw; max-height: 100vh; object-fit: contain; }
+.thieves-team-overlay { z-index: 50; padding: 20px; }
+.thieves-team-dialog { display: flex; flex-direction: column; width: min(1000px, 100%); max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); padding: 0; background: var(--cream); box-shadow: var(--shadow); }
+.thieves-team-dialog img { display: block; flex: 0 1 auto; width: 100%; height: auto; min-height: 0; object-fit: contain; }
+.thieves-team-roster { flex: 0 0 auto; max-height: 35vh; overflow-y: auto; list-style: none; margin: 0; padding: 14px 20px; text-align: center; font-family: 'Fraunces', serif; font-size: clamp(1rem, 3vw, 1.35rem); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
 .victory-dialog { position: relative; width: min(520px, 100%); max-height: calc(100vh - 40px); display: flex; flex-direction: column; padding: 0; background: var(--cream); box-shadow: var(--shadow); line-height: 0; }
 .victory-image { display: block; width: 100%; height: auto; min-height: 0; flex: 0 1 auto; object-fit: contain; }
+.gamester-overlay { z-index: 60; }
+.gamester-dialog { width: min(900px, calc(100vw - 40px)); }
+.gamester-image-choices { position: relative; width: 100%; line-height: 0; }
+.gamester-image-option { position: absolute; top: 0; height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.gamester-image-option:hover { background: rgb(245 240 230 / 10%); }
+.gamester-image-option:focus-visible { outline: 3px solid var(--red); outline-offset: -4px; }
+.gamester-rock { left: .4%; width: 32.5%; }
+.gamester-scissors { left: 33.85%; width: 32.3%; }
+.gamester-paper { left: 67.2%; width: 32.4%; }
 .victory-image.cropped { object-fit: cover; object-position: center; }
 .full-height-result-dialog { width: min(720px, 100%); height: calc(100vh - 40px); }
 .victory-image.visitor-result-image, .victory-image.judge-result-image { flex: 1 1 auto; width: auto; height: auto; min-width: 0; min-height: 0; max-width: 100%; max-height: none; object-fit: contain; align-self: center; }
@@ -148,7 +192,7 @@ h1 { font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: -.055em; line-height: 
 .victory-close:hover, .victory-close:focus-visible { color: var(--red); }
 button:disabled { cursor: not-allowed; opacity: .5; }
 .role-card { display: flex; gap: 14px; align-items: center; }
-.role-card img { width: 64px; height: 64px; object-fit: cover; }
+.role-card img { width: 64px; height: 64px; object-fit: contain; }
 .role-card-image { cursor: pointer; }
 .role-card small { color: var(--muted); display: block; margin-top: 4px; }
 .utility-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -165,6 +209,11 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 }
 @media (max-width: 520px) {
   .topbar { align-items: flex-start; gap: 12px; flex-direction: column; }
+  .profile-bar { flex-wrap: wrap; }
+  .tutorial-section-heading { display: block; }
+  .tutorial-role-grid { grid-template-columns: 1fr; }
+  .tutorial-role-card { grid-template-columns: 104px minmax(0, 1fr); gap: 10px; padding: 9px; }
+  .tutorial-role-art img { width: 46px; height: 68px; }
   .scene-heading { flex-direction: column; }
   .scene h1 { font-size: 3.7rem; }
   .timer { align-self: flex-start; }

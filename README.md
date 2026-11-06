@@ -65,7 +65,7 @@ The Healer protects a player from a night attack and can heal themselves once du
   <img src="GameImages/Roles/Good/Female/11.Female_Guard.png" alt="Guard female" width="120" />
 </div>
 
-At night, the Guard may choose another player or pass. If a killer attacks the guarded player, the player survives while the Guard and killer die. The killer receives the Guard action image at the start of the day. Guard is available as a role but is not in the preset scenarios.
+At night, the Guard may choose another player or pass. If a killer attacks the guarded player, the player survives while the Guard and killer die. The killer receives the Guard action image at the start of the day. Guard may be assigned when a scenario selects a Townsfolk Support role.
 
 ### Tavern Keeper — Townsfolk Blocking
 <div>
@@ -73,7 +73,7 @@ At night, the Guard may choose another player or pass. If a killer attacks the g
   <img src="GameImages/Roles/Good/Female/3.Female_TavernKeeper.png" alt="Tavern Keeper female" width="120" />
 </div>
 
-The Tavern Keeper blocks another player’s ability for the night, preventing them from acting.
+The Tavern Keeper blocks another player’s ability for the night, preventing them from acting. The Werewolf cannot be blocked on a Full Moon.
 
 ### Jailor — Townsfolk Blocking
 <div>
@@ -89,7 +89,7 @@ The Jailor may jail one player or pass. The jailed player cannot act, and night 
   <img src="GameImages/Roles/Good/Female/4.Female_Militia.png" alt="Militia female" width="120" />
 </div>
 
-The Militia investigates another player and learns their alignment, helping the village determine who is good or evil.
+The Militia investigates another player and learns their alignment, helping the village determine who is good or evil. The Master Thief appears as Townsfolk / Good, while the Thief appears as Thieves / Evil.
 
 ### Judge — Townsfolk Investigate
 <div>
@@ -97,7 +97,7 @@ The Militia investigates another player and learns their alignment, helping the 
   <img src="GameImages/Roles/Good/Female/10.Female_Judge.png" alt="Judge female" width="120" />
 </div>
 
-The Judge chooses two players at night and learns whether they are teammates or rivals, or may pass without choosing anyone. Choosing players counts as visiting both for night visit effects, including the Werewolf and Trapper. Players on the same Townsfolk or Thieves team are teammates; Independent Evil players always count as rivals, even when both are Independent Evil. Judge is available as a role but is not in the preset scenarios.
+The Judge chooses two players at night and learns whether they are teammates or rivals, or may pass without choosing anyone. Choosing players counts as visiting both for night visit effects, including the Werewolf and Trapper. Players on the same Townsfolk or Thieves team are teammates; Independent Evil players always count as rivals, even when both are Independent Evil. Judge may be assigned when a scenario selects a Townsfolk Investigate role.
 
 ### Hunter — Townsfolk Killing
 <div>
@@ -105,7 +105,7 @@ The Judge chooses two players at night and learns whether they are teammates or 
   <img src="GameImages/Roles/Good/Female/5.Female_Hunter.png" alt="Hunter female" width="120" />
 </div>
 
-The Hunter shoots after the first night. If they target a Townsfolk player, they may lose their own life the following day.
+The Hunter cannot shoot on the first night and may shoot on later nights. If the Hunter shoots a Townsfolk player, the Hunter also dies from the shot that night.
 
 ### Crossbowman — Townsfolk Killing
 <div>
@@ -113,7 +113,7 @@ The Hunter shoots after the first night. If they target a Townsfolk player, they
   <img src="GameImages/Roles/Good/Female/9.Female_Crossbowwoman.png" alt="Crossbowwoman" width="120" />
 </div>
 
-The Crossbowman can shoot after the first night and has two arrows for the entire game. A Crossbowman kill is privately revealed to the victim with the Crossbowman action image. The role is not included in the preset scenarios.
+The Crossbowman cannot shoot on the first night and has two arrows for the entire game. Passing or being blocked does not spend an arrow. A Crossbowman kill is privately revealed to the victim with the Crossbowman action image. The Crossbowman may be assigned when a scenario selects a Townsfolk Killing role.
 
 ### Trapper — Townsfolk Killing
 <div>
@@ -121,7 +121,7 @@ The Crossbowman can shoot after the first night and has two arrows for the entir
   <img src="GameImages/Roles/Good/Female/13.Female_Trapper.png" alt="Trapper" width="120" />
 </div>
 
-At night, the Trapper may place a trap on themselves or pass. They have two traps for the entire game. Every visitor dies and privately receives the Trapper action image when the day begins. The role is not included in the preset scenarios.
+At night, the Trapper may place a trap on themselves or pass. They have two traps for the entire game; passing or being blocked does not spend a trap. Every visitor dies and privately receives the Trapper action image when the day begins. The Trapper may be assigned when a scenario selects a Townsfolk Killing role.
 
 ### RedHat — Townsfolk Neutral
 <div>
@@ -137,7 +137,7 @@ The RedHat is protected from night attacks while the Hunter remains alive.
   <img src="GameImages/Roles/Good/Female/7.Female_Shadow.png" alt="Shadow female" width="120" />
 </div>
 
-The Shadow watches a selected target and learns who visited them during the night without seeing exact role details.
+The Shadow chooses a player and learns which players visited that chosen player during the night. The result gives visitor names, not their roles or intentions.
 
 ### Watcher — Townsfolk Investigate
 <div>
@@ -145,7 +145,7 @@ The Shadow watches a selected target and learns who visited them during the nigh
   <img src="GameImages/Roles/Good/Female/8.Female_Watcher.png" alt="Watcher female" width="120" />
 </div>
 
-The Watcher learns which players visited a selected target during the night, without seeing their roles, actions, or intentions. The Watcher is available as a role but is not included in the preset scenarios.
+The Watcher chooses a player and learns where that chosen player went during the night. The result gives destination names, not roles or intentions. Watcher may be assigned when a scenario selects a Townsfolk Investigate role.
 
 ---
 
@@ -202,6 +202,14 @@ The Werewolf acts alone during Full Moon nights, cannot be killed during the nig
 </div>
 
 The Jester wins by being executed during the daytime voting process.
+
+### Gamester
+<div>
+  <img src="GameImages/Roles/Independent Evil/Male/3.Male_LordSmith.png" alt="Gamester male" width="120" />
+  <img src="GameImages/Roles/Independent Evil/Female/3.Female_LadyMargaret.png" alt="Gamester female" width="120" />
+</div>
+
+At night, the Gamester may choose another living player or pass. For a challenge, the Gamester picks rock, paper, or scissors. If the chosen player is not jailed, they immediately receive the game image and choose anonymously without learning who challenged them. Rock beats scissors, scissors beats paper, and paper beats rock; a loss or draw has no effect. If the Gamester wins, the opponent dies at daybreak. After causing two such deaths, the Gamester wins independently.
 
 ---
 

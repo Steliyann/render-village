@@ -61,7 +61,8 @@ test('isolates players through create and join lobby protocol', async () => {
     }
     assert.ok(first, 'server did not accept a WebSocket connection');
     sockets.push(first);
-    await waitForType(first, 'welcome');
+    const welcome = await waitForType(first, 'welcome');
+    assert.equal(welcome.room.maximumPlayers, 12);
     first.send(JSON.stringify({ type: 'create-lobby', name: 'TEST-EPIC4' }));
     const created = await waitForType(first, 'lobby-joined');
     first.send(JSON.stringify({ type: 'create-lobby', name: 'TEST-EPIC5' }));

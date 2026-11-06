@@ -62,6 +62,15 @@ const scenarios = {
     { subgroup: 'Townsfolk Killing', count: 1 },
     { subgroup: 'Thieves Killing', count: 2 },
     { subgroup: 'Independent Evil', count: 2 }
+  ],
+  12: [
+    { subgroup: 'Townsfolk Support', count: 1 },
+    { subgroup: 'Townsfolk Investigate', count: 2 },
+    { subgroup: 'Townsfolk Blocking', count: 1 },
+    { subgroup: 'Townsfolk Killing', count: 1 },
+    { subgroup: 'Thieves Killing', count: 2 },
+    { subgroup: 'Thieves Support', count: 2 },
+    { subgroup: 'Independent Evil', count: 3 }
   ]
 };
 
@@ -106,8 +115,8 @@ function scenarioForPlayerCount(playerCount, randomInt = crypto.randomInt) {
     roleDefinitions,
     nightRoleOrder: [...nightRoleOrder],
     timers: { preparation: 30, nightAction: 40, dayDiscussion: 240, defense: 60, finalVote: 40 },
-    specialRules: ['Full Moon occurs on even-numbered nights.', 'Jester victory occurs on daytime execution.'],
-    victoryConditions: ['Townsfolk', 'Thieves', 'Werewolf', 'Jester']
+    specialRules: ['Full Moon occurs on even-numbered nights.', 'Jester victory occurs on daytime execution.', 'Gamester victory occurs after two successful daytime game kills.'],
+    victoryConditions: ['Townsfolk', 'Thieves', 'Werewolf', 'Jester', 'Gamester']
   };
 }
 

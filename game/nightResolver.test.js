@@ -237,6 +237,31 @@ test('Werewolf cannot be killed during any night', () => {
   assert.deepEqual(result.deaths.map(death => death.name), ['Thief']);
 });
 
+test('Independent Evil targets cannot be killed at night by the Thieves or Werewolf', () => {
+  for (const targetRole of ['Jester', 'Gamester']) {
+    const thiefTarget = player('Target', targetRole);
+    const thiefResult = resolveNight({ players: [player('Thief', 'Thief', 'Target'), thiefTarget], nightNumber: 1 });
+    assert.equal(thiefTarget.alive, true, `Thief cannot kill ${targetRole}`);
+    assert.deepEqual(thiefResult.deaths, []);
+
+    const visitor = player('Target', targetRole, 'Wolf');
+    const wolfResult = resolveNight({ players: [player('Wolf', 'Werewolf'), visitor], nightNumber: 2 });
+    assert.equal(visitor.alive, true, `Werewolf cannot kill visiting ${targetRole}`);
+    assert.deepEqual(wolfResult.deaths, []);
+  }
+});
+
+test('Townsfolk night attacks can kill Independent Evil roles', () => {
+  for (const targetRole of ['Jester', 'Gamester']) {
+    const target = player('Target', targetRole);
+    const crossbowman = player('Crossbowman', 'Crossbowman', 'Target');
+    crossbowman.crossbowArrowsRemaining = 2;
+    const result = resolveNight({ players: [crossbowman, target], nightNumber: 2 });
+    assert.equal(target.alive, false, `Crossbowman can kill ${targetRole}`);
+    assert.ok(result.deaths.some(death => death.name === 'Target' && death.killerRole === 'Crossbowman'));
+  }
+});
+
 test('Judge is killed by the Werewolf when selecting it during a Full Moon', () => {
   const judge = player('Judge', 'Judge');
   judge.action = 'judge';
@@ -250,6 +275,16 @@ test('Judge is killed by the Werewolf when selecting it during a Full Moon', () 
   ]);
 });
 
+test('Gamester challenge target is not treated as a physical visit', () => {
+  const players = [
+    player('Gamester', 'Gamester', 'Wolf'),
+    player('Wolf', 'Werewolf'),
+    player('Trapper', 'Trapper', 'Trapper')
+  ];
+  const result = resolveNight({ players, nightNumber: 2 });
+  assert.deepEqual(result.deaths, []);
+});
+
 test('Master Thief takes over visiting after the Thief is gone', () => {
   const players = [
     player('Master', 'MasterThief', 'Target'),
@@ -261,12 +296,12 @@ test('Master Thief takes over visiting after the Thief is gone', () => {
   assert.deepEqual(result.privateMessages.find(message => message.type === 'shadow-result').visitors, ['Master']);
 });
 
-test('Watcher privately receives the visitors to the selected target', () => {
+test('Watcher privately learns where the selected player went', () => {
   const judge = player('Judge', 'Judge');
   judge.action = 'judge';
   judge.judgeTargets = ['Target', 'Other'];
   const players = [
-    player('Watcher', 'Watcher', 'Target'),
+    player('Watcher', 'Watcher', 'Judge'),
     player('Visitor', 'Healer', 'Target'),
     judge,
     player('Target', 'Villager'),
@@ -276,8 +311,16 @@ test('Watcher privately receives the visitors to the selected target', () => {
   assert.deepEqual(result.privateMessages.find(message => message.type === 'watcher-result'), {
     recipientId: 'Watcher',
     type: 'watcher-result',
-    target: 'Target',
-    visitors: ['Visitor', 'Judge']
+    target: 'Judge',
+    destinations: ['Target', 'Other']
+  });
+});
+
+test('Watcher learns when the selected player did not visit anyone', () => {
+  const watcher = player('Watcher', 'Watcher', 'Idle');
+  const result = resolveNight({ players: [watcher, player('Idle', 'Villager')], nightNumber: 1 });
+  assert.deepEqual(result.privateMessages.find(message => message.type === 'watcher-result'), {
+    recipientId: 'Watcher', type: 'watcher-result', target: 'Idle', destinations: []
   });
 });
 
@@ -429,6 +472,43 @@ test('A blocked Trapper neither sets nor spends a trap', () => {
   assert.equal(trapper.trapperTrapsRemaining, 2);
   assert.deepEqual(result.deaths, []);
 });
+
+for (const [killerRole, targetRole] of [
+  ['MasterThief', 'Thief'], ['MasterThief', 'ThiefShaman'], ['MasterThief', 'ThiefSeer'],
+  ['Thief', 'ThiefShaman'], ['Thief', 'ThiefSeer'], ['ThiefShaman', 'ThiefSeer'],
+  ['ThiefSeer', 'ThiefSeer']
+]) {
+  test(`${killerRole} cannot kill ${targetRole} even with a preloaded teammate target`, () => {
+    const attacker = player('Attacker', killerRole, 'Teammate');
+    const teammate = killerRole === targetRole ? attacker : player('Teammate', targetRole);
+    if (teammate === attacker) attacker.action = attacker.name;
+    const players = teammate === attacker ? [attacker] : [attacker, teammate];
+    const result = resolveNight({ players: [...players, player('Villager', 'Villager')], nightNumber: 1 });
+    assert.equal(teammate.alive, true);
+    assert.deepEqual(result.deaths, []);
+  });
+}
+
+for (const role of ['MasterThief', 'Thief', 'ThiefShaman', 'ThiefSeer']) {
+  test(`Thief Seer cannot check a ${role} teammate's role`, () => {
+    const seer = player('Seer', 'ThiefSeer', role === 'ThiefSeer' ? 'Seer' : 'Teammate');
+    const teammate = role === 'ThiefSeer' ? player('Master', 'MasterThief') : player('Teammate', role);
+    const result = resolveNight({ players: [seer, teammate, player('Villager', 'Villager')], nightNumber: 1 });
+    assert.equal(result.privateMessages.some(message => message.type === 'thief-seer-result'), false);
+  });
+}
+
+for (const role of ['MasterThief', 'Thief', 'ThiefSeer']) {
+  test(`Thief Shaman can still silence a ${role} teammate`, () => {
+    const teammate = player('Teammate', role);
+    const players = [player('Shaman', 'ThiefShaman', 'Teammate'), teammate, player('Villager', 'Villager')];
+    if (role === 'ThiefSeer') players.push(player('Master', 'MasterThief'));
+    const result = resolveNight({ players, nightNumber: 1 });
+    assert.equal(teammate.silenced, true);
+    assert.equal(teammate.alive, true);
+    assert.deepEqual(result.privateMessages, [{ recipientId: 'Teammate', type: 'shaman-silence' }]);
+  });
+}
 
 test('Thief Shaman silences one player and does not kill while another Thief lives', () => {
   const master = player('Master', 'MasterThief', 'Target');

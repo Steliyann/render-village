@@ -23,7 +23,7 @@ function canSubmitVote({ player, phase, nominee }) {
 }
 
 function canSubmitDefense({ player, nominee, phase }) {
-  return phase === 'defense' && isAlive(player) && player.name === nominee;
+  return phase === 'defense' && isAlive(player) && player.silenced !== true && player.name === nominee;
 }
 
 function canAdvancePhase({ player, phase }) {

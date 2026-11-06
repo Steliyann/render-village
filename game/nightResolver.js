@@ -4,6 +4,14 @@ function alignmentFor(role) {
   return roleDefinition(role)?.investigationResult || 'Townsfolk / Good';
 }
 
+function canKillTarget(killerRole, target) {
+  const targetRole = typeof target === 'string' ? target : target?.role;
+  const targetTeam = roleDefinition(targetRole)?.team;
+  const killerTeam = roleDefinition(killerRole)?.team;
+  if (killerTeam === 'Thieves' && targetTeam === 'Thieves') return false;
+  return targetTeam !== 'Independent Evil' || killerTeam === 'Townsfolk';
+}
+
 function resolveNight({ players, nightNumber }) {
   for (const player of players) player.silenced = false;
   const living = players.filter(player => player.alive !== false);
@@ -13,9 +21,11 @@ function resolveNight({ players, nightNumber }) {
     .filter(player => player.role === 'TavernKeeper' && player.name !== jailedName && player.action && player.action !== 'none' && player.action !== jailedName)
     .map(player => player.action));
   const isBlocked = player => blockedNames.has(player.name) && !(player.role === 'Werewolf' && nightNumber % 2 === 0);
-  const visitsTarget = (player, targetName) => player.role === 'Judge'
-    ? Array.isArray(player.judgeTargets) && player.judgeTargets.includes(targetName)
-    : player.action === targetName;
+  const visitsTarget = (player, targetName) => player.role === 'Gamester'
+    ? false
+    : player.role === 'Judge'
+      ? Array.isArray(player.judgeTargets) && player.judgeTargets.includes(targetName)
+      : player.action === targetName;
   const healer = living.find(player => player.role === 'Healer' && !isBlocked(player) && player.name !== jailedName);
   const healerTarget = healer?.action && healer.action !== 'none' && healer.action !== jailedName ? living.find(player => player.name === healer.action) : null;
   const selfHealing = Boolean(healer && healerTarget && healerTarget.id === healer.id);
@@ -52,18 +62,34 @@ function resolveNight({ players, nightNumber }) {
   if (seerCanKill && thiefSeer.action && thiefSeer.action !== 'none') thievesAttacker = thiefSeer;
   const attackers = living.filter(player => player.role === 'Werewolf' && !isBlocked(player) && player.name !== jailedName);
   if (thievesAttacker) attackers.push(thievesAttacker);
-  const killerByTarget = new Map();
+  const attackRolesByTarget = new Map();
+  const addAttack = (targetName, killerRole) => {
+    if (!targetName || targetName === 'none') return;
+    if (!attackRolesByTarget.has(targetName)) attackRolesByTarget.set(targetName, []);
+    attackRolesByTarget.get(targetName).push(killerRole);
+  };
   for (const attacker of attackers) {
-    if (attacker.action && attacker.action !== 'none') killerByTarget.set(attacker.action, attacker.role);
+    addAttack(attacker.action, attacker.role);
   }
-  const victims = new Set(attackers.map(attacker => attacker.action).filter(target => target && target !== 'none'));
+  const attackTargets = new Set(attackRolesByTarget.keys());
   if (hunterTarget) {
-    victims.add(hunterTarget);
-    if (!killerByTarget.has(hunterTarget)) killerByTarget.set(hunterTarget, 'Hunter');
+    attackTargets.add(hunterTarget);
+    addAttack(hunterTarget, 'Hunter');
   }
   if (crossbowTarget) {
-    victims.add(crossbowTarget);
-    if (!killerByTarget.has(crossbowTarget)) killerByTarget.set(crossbowTarget, 'Crossbowman');
+    attackTargets.add(crossbowTarget);
+    addAttack(crossbowTarget, 'Crossbowman');
+  }
+  const killerByTarget = new Map();
+  const victims = new Set();
+  for (const targetName of attackTargets) {
+    const target = living.find(player => player.name === targetName);
+    if (!target || targetName === jailedName) continue;
+    const eligibleKillers = (attackRolesByTarget.get(targetName) || []).filter(killerRole => canKillTarget(killerRole, target));
+    if (!eligibleKillers.length) continue;
+    const townsfolkKiller = eligibleKillers.find(killerRole => roleDefinition(killerRole)?.team === 'Townsfolk');
+    victims.add(targetName);
+    killerByTarget.set(targetName, townsfolkKiller || eligibleKillers[0]);
   }
   if (jailedName) victims.delete(jailedName);
   const hunterAlive = hunter && hunter.alive !== false;
@@ -109,7 +135,7 @@ function resolveNight({ players, nightNumber }) {
   if (werewolf && nightNumber % 2 === 0) {
     // Only the thief who actually carries out the visit dies; the partner stays home.
     const isIdleThiefPartner = player => ['MasterThief', 'Thief'].includes(player.role) && player !== thievesAttacker;
-    for (const visitor of living.filter(player => player.name !== werewolf.name && player.name !== jailedName && visitsTarget(player, werewolf.name) && !isBlocked(player) && !isIdleThiefPartner(player))) {
+    for (const visitor of living.filter(player => player.name !== werewolf.name && player.name !== jailedName && visitsTarget(player, werewolf.name) && !isBlocked(player) && !isIdleThiefPartner(player) && canKillTarget('Werewolf', player))) {
       if (visitor.alive !== false) {
         visitor.alive = false;
         deaths.push({ name: visitor.name, role: visitor.role, cause: 'werewolf-visitor', killerRole: 'Werewolf' });
@@ -133,7 +159,7 @@ function resolveNight({ players, nightNumber }) {
   if (thiefSeer && seerHasThiefTeammate && !isBlocked(thiefSeer) && thiefSeer.name !== jailedName
     && thiefSeer.action && thiefSeer.action !== 'none') {
     const target = living.find(player => player.name === thiefSeer.action);
-    if (target) {
+    if (target && roleDefinition(target.role)?.team !== 'Thieves') {
       const team = living.filter(player => ['MasterThief', 'Thief', 'ThiefShaman', 'ThiefSeer'].includes(player.role));
       for (const teammate of team) {
         privateMessages.push({ recipientId: teammate.id, type: 'thief-seer-result', target: target.name, role: target.role });
@@ -168,11 +194,22 @@ function resolveNight({ players, nightNumber }) {
   for (const role of ['Shadow', 'Watcher']) {
     const observer = living.find(player => player.role === role && !isBlocked(player));
     if (!observer || observer.name === jailedName || !observer.action || observer.action === 'none' || observer.action === jailedName) continue;
-    const visitors = living
-      .filter(visitor => visitor.name !== observer.name && visitsTarget(visitor, observer.action) && !isBlocked(visitor))
-      .filter(visitor => visitor.role !== 'MasterThief' || !thief || thief.alive === false)
-      .map(visitor => visitor.name);
-    privateMessages.push({ recipientId: observer.id, type: role === 'Watcher' ? 'watcher-result' : 'shadow-result', target: observer.action, visitors });
+    if (role === 'Shadow') {
+      const visitors = living
+        .filter(visitor => visitor.name !== observer.name && visitsTarget(visitor, observer.action) && !isBlocked(visitor))
+        .filter(visitor => visitor.role !== 'MasterThief' || !thief || thief.alive === false)
+        .map(visitor => visitor.name);
+      privateMessages.push({ recipientId: observer.id, type: 'shadow-result', target: observer.action, visitors });
+      continue;
+    }
+
+    const selectedPlayer = living.find(player => player.name === observer.action);
+    const destinations = selectedPlayer && selectedPlayer.alive !== false && selectedPlayer.name !== jailedName && !isBlocked(selectedPlayer)
+      && selectedPlayer.role !== 'Gamester' && !(selectedPlayer.role === 'MasterThief' && thief && thief.alive !== false)
+      ? living.filter(destination => destination.name !== selectedPlayer.name && destination.name !== jailedName
+        && visitsTarget(selectedPlayer, destination.name)).map(destination => destination.name)
+      : [];
+    privateMessages.push({ recipientId: observer.id, type: 'watcher-result', target: selectedPlayer?.name || observer.action, destinations });
   }
 
   // A player who could not have died anyway produces no healing result.
